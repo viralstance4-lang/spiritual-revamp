@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import Banner from '../components/home/banner';
+import Banner from '../components/home/Banner';
 import HeroSection from '../components/home/HeroSection';
 import TrustBadges from '../components/home/TrustBadges';
 import CategoryGrid from '../components/home/CategoryGrid';

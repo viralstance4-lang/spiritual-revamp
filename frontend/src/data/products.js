@@ -1,0 +1,132 @@
+// Static fallback data (used when API is unavailable)
+export const PRODUCTS = [
+  {
+    _id: '1',
+    name: 'Golden Abundance Bracelet',
+    slug: 'golden-abundance-bracelet',
+    tagline: 'Magnetize wealth. Rewire your money mindset.',
+    category: 'money',
+    intention: 'Attract Wealth & Prosperity',
+    price: 999,
+    comparePrice: 1999,
+    images: [
+      { url: 'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=800&auto=format&fit=crop', alt: 'Golden Abundance Bracelet' },
+      { url: 'https://images.unsplash.com/photo-1573408301185-9519f94816b5?w=800&auto=format&fit=crop', alt: 'Golden Abundance Bracelet Detail' },
+    ],
+    benefits: [
+      { title: 'Attract Unexpected Wealth', description: "Citrine is known as the \"merchant's stone\" — it opens channels for money to flow from unexpected sources.", icon: '💰' },
+      { title: 'Destroy Scarcity Mindset', description: "Pyrite's golden energy burns through deep-rooted beliefs of lack and limitation.", icon: '🔥' },
+      { title: 'Luck On Your Side', description: 'Green Aventurine, the luckiest crystal, tips the universe\'s favor toward you.', icon: '🍀' },
+    ],
+    ingredients: ['Citrine', 'Pyrite', 'Green Aventurine', '925 Silver clasp'],
+    affirmation: 'I am a magnet for abundance. Money flows to me effortlessly.',
+    beforeAfter: {
+      before: 'Struggling with bills, feeling stuck in the same income level',
+      after: 'New opportunities appear, money flows more easily, financial anxiety dissolves',
+    },
+    stock: 47,
+    isFeatured: true,
+    isBestseller: true,
+    ratings: { average: 4.8, count: 1247 },
+  },
+  {
+    _id: '2',
+    name: 'Black Shield Bracelet',
+    slug: 'black-shield-bracelet',
+    tagline: 'Block negative energy. Reclaim your peace.',
+    category: 'protection',
+    intention: 'Shield & Protect Energy',
+    price: 899,
+    comparePrice: 1799,
+    images: [
+      { url: 'https://images.unsplash.com/photo-1573408301185-9519f94816b5?w=800&auto=format&fit=crop', alt: 'Black Shield Bracelet' },
+    ],
+    benefits: [
+      { title: 'Psychic Protection 24/7', description: 'Black Tourmaline creates a powerful shield against negative energy and EMF radiation.', icon: '🛡️' },
+      { title: 'Absorb & Transmute', description: 'Obsidian absorbs negativity and transforms it into strength.', icon: '⚫' },
+      { title: 'Grounding Presence', description: 'Hematite keeps you rooted, preventing anxiety from negative energy.', icon: '🌍' },
+    ],
+    ingredients: ['Black Tourmaline', 'Obsidian', 'Hematite', 'Lava Stone'],
+    affirmation: 'I am protected. Only love and light enter my space.',
+    beforeAfter: {
+      before: 'Absorbing everyone\'s energy, feeling drained after social interactions',
+      after: 'Strong energetic boundaries, feeling centered and protected',
+    },
+    stock: 52,
+    isFeatured: true,
+    isBestseller: false,
+    ratings: { average: 4.9, count: 892 },
+  },
+  {
+    _id: '3',
+    name: 'Rose Love Bracelet',
+    slug: 'rose-love-bracelet',
+    tagline: 'Open your heart. Attract your divine love.',
+    category: 'love',
+    intention: 'Attract Love & Heal Heart',
+    price: 999,
+    comparePrice: 1999,
+    images: [
+      { url: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=800&auto=format&fit=crop', alt: 'Rose Love Bracelet' },
+    ],
+    benefits: [
+      { title: 'Open Your Heart Chakra', description: 'Rose Quartz dissolves emotional walls and opens you to receive love.', icon: '💗' },
+      { title: 'Heal From the Past', description: 'Rhodonite heals old wounds and abandonment issues that block love.', icon: '🌹' },
+      { title: 'Divine Feminine Energy', description: 'Moonstone connects you to intuition and magnetic attraction.', icon: '🌙' },
+    ],
+    ingredients: ['Rose Quartz', 'Rhodonite', 'Moonstone', 'Pink Opal'],
+    affirmation: 'I am worthy of deep, beautiful love. My heart is open and ready.',
+    beforeAfter: {
+      before: 'Repeating toxic relationship patterns, feeling unworthy of love',
+      after: 'Heart feels lighter, attracting kinder people, deeper self-love',
+    },
+    stock: 38,
+    isFeatured: true,
+    isBestseller: true,
+    ratings: { average: 4.7, count: 1089 },
+  },
+  {
+    _id: '4',
+    name: 'Tiger Energy Bracelet',
+    slug: 'tiger-energy-bracelet',
+    tagline: 'Activate your power. Awaken unstoppable energy.',
+    category: 'energy',
+    intention: 'Boost Energy & Confidence',
+    price: 849,
+    comparePrice: 1699,
+    images: [
+      { url: 'https://images.unsplash.com/photo-1506629082955-511b1aa562c8?w=800&auto=format&fit=crop', alt: 'Tiger Energy Bracelet' },
+    ],
+    benefits: [
+      { title: 'Laser Focus & Clarity', description: "Tiger's Eye cuts through confusion and gives you mental clarity.", icon: '🐯' },
+      { title: 'Ignite Passion & Drive', description: 'Carnelian rekindles your inner fire — you\'ll feel energized every morning.', icon: '🔥' },
+      { title: 'Root Chakra Power', description: 'Red Jasper grounds your energy and builds stamina.', icon: '❤️' },
+    ],
+    ingredients: ["Tiger's Eye", 'Carnelian', 'Red Jasper', 'Black Onyx'],
+    affirmation: 'I am powerful. I have unlimited energy and focus to achieve my goals.',
+    beforeAfter: {
+      before: 'Chronic fatigue, procrastination, lack of motivation',
+      after: 'Natural energy boost, clearer goals, taking action without overthinking',
+    },
+    stock: 61,
+    isFeatured: true,
+    isBestseller: false,
+    ratings: { average: 4.8, count: 743 },
+  },
+];
+
+export const TESTIMONIALS = [
+  { name: 'Priya M.', city: 'Mumbai', rating: 5, text: 'I ordered the Golden Abundance bracelet skeptically. Within 3 weeks, I got a promotion I\'d been waiting 2 years for. Coincidence? Maybe. But I\'m not taking it off.', product: 'Golden Abundance Bracelet', verified: true },
+  { name: 'Rahul S.', city: 'Delhi', rating: 5, text: 'The Black Shield bracelet completely changed my energy. I used to feel drained after office. Now I come home with energy to spare. My wife noticed the difference immediately.', product: 'Black Shield Bracelet', verified: true },
+  { name: 'Anjali K.', city: 'Bangalore', rating: 5, text: 'Got the Rose Love bracelet after a terrible breakup. 6 months later I\'m in the healthiest relationship of my life. The bracelet reminded me to love myself first.', product: 'Rose Love Bracelet', verified: true },
+  { name: 'Vikram P.', city: 'Pune', rating: 5, text: 'Tiger Energy bracelet — I wake up at 5am now without an alarm. My gym performance improved, my focus at work is laser sharp. This thing is real.', product: 'Tiger Energy Bracelet', verified: true },
+  { name: 'Sneha R.', city: 'Chennai', rating: 5, text: 'The packaging alone is premium. The bracelet quality is unmatched. But most importantly — I feel different wearing it. More aligned, more intentional.', product: 'Golden Abundance Bracelet', verified: true },
+  { name: 'Arjun T.', city: 'Hyderabad', rating: 4, text: 'Ordered 3 bracelets for myself and gifted one to my mother. All of us are obsessed. The affirmation cards that came with it are beautiful.', product: 'Black Shield Bracelet', verified: true },
+];
+
+export const CATEGORY_INFO = {
+  money: { label: 'Money & Abundance', color: '#22c55e', emoji: '💰', description: 'Attract wealth, prosperity and financial freedom' },
+  protection: { label: 'Protection', color: '#3b82f6', emoji: '🛡️', description: 'Shield your energy from negativity and toxic influences' },
+  love: { label: 'Love & Relationships', color: '#ec4899', emoji: '💗', description: 'Open your heart chakra and attract deep, meaningful love' },
+  energy: { label: 'Energy & Motivation', color: '#f97316', emoji: '⚡', description: 'Boost vitality, focus and unstoppable inner drive' },
+};

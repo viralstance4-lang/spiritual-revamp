@@ -1,0 +1,7 @@
+// Static fallback data for admin (same as frontend)
+export const PRODUCTS = [
+  { _id: '1', name: 'Golden Abundance Bracelet', slug: 'golden-abundance-bracelet', tagline: 'Magnetize wealth.', category: 'money', price: 999, comparePrice: 1999, images: [{ url: 'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=200' }], stock: 47, sold: 412, isActive: true, isFeatured: true, isBestseller: true, ratings: { average: 4.8, count: 1247 } },
+  { _id: '2', name: 'Black Shield Bracelet', slug: 'black-shield-bracelet', tagline: 'Block negative energy.', category: 'protection', price: 899, comparePrice: 1799, images: [{ url: 'https://images.unsplash.com/photo-1573408301185-9519f94816b5?w=200' }], stock: 52, sold: 278, isActive: true, isFeatured: true, isBestseller: false, ratings: { average: 4.9, count: 892 } },
+  { _id: '3', name: 'Rose Love Bracelet', slug: 'rose-love-bracelet', tagline: 'Open your heart.', category: 'love', price: 999, comparePrice: 1999, images: [{ url: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=200' }], stock: 38, sold: 301, isActive: true, isFeatured: true, isBestseller: true, ratings: { average: 4.7, count: 1089 } },
+  { _id: '4', name: 'Tiger Energy Bracelet', slug: 'tiger-energy-bracelet', tagline: 'Activate your power.', category: 'energy', price: 849, comparePrice: 1699, images: [{ url: 'https://images.unsplash.com/photo-1506629082955-511b1aa562c8?w=200' }], stock: 61, sold: 198, isActive: true, isFeatured: true, isBestseller: false, ratings: { average: 4.8, count: 743 } },
+];

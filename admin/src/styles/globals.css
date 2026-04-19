@@ -1,0 +1,48 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Inter:wght@300;400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+  html { -webkit-font-smoothing: antialiased; }
+  body { @apply bg-dark-400 text-white font-sans; overflow-x: hidden; }
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { @apply bg-dark-400; }
+  ::-webkit-scrollbar-thumb { @apply bg-white/10 rounded-full; }
+  h1, h2, h3, h4 { @apply font-sans; }
+}
+
+/* ─── Policy rich-text content (editor + preview) ────────────────────────────── */
+.policy-content { color: rgba(255,255,255,0.85); line-height: 1.8; font-size: 0.9375rem; }
+
+/* Strip ALL inline background-color / color from pasted Word/Google Docs content */
+.policy-content *                                          { background-color: transparent !important; }
+.policy-content *:not(a):not(strong):not(b):not(code)     { color: inherit !important; }
+
+.policy-content p      { color: rgba(255,255,255,0.85) !important; margin-bottom: 1rem; }
+.policy-content h1     { color: #fff !important; font-size: 1.6rem; font-weight: 700; margin: 1.75rem 0 0.6rem; font-family: inherit; }
+.policy-content h2     { color: #fff !important; font-size: 1.3rem; font-weight: 700; margin: 1.5rem 0 0.5rem; font-family: inherit; }
+.policy-content h3     { color: rgba(255,255,255,0.95) !important; font-size: 1.05rem; font-weight: 600; margin: 1.25rem 0 0.4rem; font-family: inherit; }
+.policy-content span   { color: inherit !important; font-size: inherit !important; font-family: inherit !important; }
+.policy-content strong, .policy-content b { color: #fff !important; font-weight: 600; }
+.policy-content em,    .policy-content i  { font-style: italic; color: rgba(255,255,255,0.75) !important; }
+.policy-content a      { color: #D4AF37 !important; text-decoration: underline; text-underline-offset: 3px; }
+.policy-content a:hover { color: #e8c84a !important; }
+.policy-content ul     { list-style: disc;    padding-left: 1.5rem; margin-bottom: 1rem; }
+.policy-content ol     { list-style: decimal; padding-left: 1.5rem; margin-bottom: 1rem; }
+.policy-content li     { margin-bottom: 0.35rem; color: rgba(255,255,255,0.85) !important; }
+.policy-content blockquote { border-left: 3px solid #D4AF37; padding-left: 1rem; color: rgba(255,255,255,0.55) !important; margin: 1.25rem 0; font-style: italic; }
+.policy-content hr     { border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 2rem 0; }
+.policy-content code   { background: rgba(255,255,255,0.08) !important; padding: 0.1em 0.4em; border-radius: 4px; font-size: 0.85em; color: #D4AF37 !important; }
+
+@layer components {
+  .glass { @apply bg-white/5 backdrop-blur-md border border-white/10; }
+  .input { @apply w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white placeholder-white/30 focus:outline-none focus:border-gold-500 transition-colors text-sm; }
+  .btn-primary { @apply inline-flex items-center justify-center gap-2 bg-gold-500 text-black font-semibold px-5 py-2.5 rounded-xl transition-all hover:bg-gold-400 active:scale-95 disabled:opacity-50 text-sm; }
+  .btn-outline { @apply inline-flex items-center justify-center gap-2 border border-white/20 text-white/70 px-5 py-2.5 rounded-xl transition-all hover:bg-white/10 hover:text-white text-sm; }
+  .btn-danger { @apply inline-flex items-center justify-center gap-2 bg-red-500/10 border border-red-500/20 text-red-400 px-5 py-2.5 rounded-xl transition-all hover:bg-red-500/20 text-sm; }
+  .badge { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium; }
+  .card { @apply glass rounded-2xl p-6; }
+  .table-row { @apply border-b border-white/5 hover:bg-white/5 transition-colors; }
+}

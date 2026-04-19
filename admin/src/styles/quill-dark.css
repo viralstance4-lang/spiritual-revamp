@@ -1,0 +1,103 @@
+/* ── Quill dark-theme overrides ────────────────────────────────────────────── */
+
+/* Toolbar */
+.ql-toolbar.ql-snow {
+  background: #1a1a1a;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-bottom: none !important;
+  border-radius: 12px 12px 0 0;
+  padding: 8px 10px;
+}
+
+/* Toolbar icons */
+.ql-toolbar.ql-snow .ql-stroke {
+  stroke: rgba(255, 255, 255, 0.5);
+}
+.ql-toolbar.ql-snow .ql-fill {
+  fill: rgba(255, 255, 255, 0.5);
+}
+.ql-toolbar.ql-snow .ql-picker-label {
+  color: rgba(255, 255, 255, 0.5);
+}
+.ql-toolbar.ql-snow button:hover .ql-stroke,
+.ql-toolbar.ql-snow .ql-active .ql-stroke {
+  stroke: #D4AF37;
+}
+.ql-toolbar.ql-snow button:hover .ql-fill,
+.ql-toolbar.ql-snow .ql-active .ql-fill {
+  fill: #D4AF37;
+}
+.ql-toolbar.ql-snow .ql-picker-label:hover,
+.ql-toolbar.ql-snow .ql-active .ql-picker-label {
+  color: #D4AF37;
+}
+
+/* Dropdown */
+.ql-toolbar.ql-snow .ql-picker-options {
+  background: #1a1a1a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+.ql-toolbar.ql-snow .ql-picker-item {
+  color: rgba(255, 255, 255, 0.6);
+}
+.ql-toolbar.ql-snow .ql-picker-item:hover {
+  color: #D4AF37;
+}
+
+/* Editor container */
+.ql-container.ql-snow {
+  background: #111111;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-top: none !important;
+  border-radius: 0 0 12px 12px;
+  font-family: inherit;
+}
+
+/* Placeholder */
+.ql-editor.ql-blank::before {
+  color: rgba(255, 255, 255, 0.2) !important;
+  font-style: normal;
+}
+
+/* Editor text area */
+.ql-editor {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.875rem;
+  line-height: 1.6;
+  min-height: 140px;
+  padding: 14px 16px;
+}
+
+/* Headings inside editor */
+.ql-editor h1,
+.ql-editor h2,
+.ql-editor h3 {
+  color: #fff;
+  font-weight: 600;
+  margin-bottom: 0.4em;
+}
+
+/* Lists */
+.ql-editor ul,
+.ql-editor ol {
+  padding-left: 1.5em;
+}
+.ql-editor li {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Links */
+.ql-editor a {
+  color: #D4AF37;
+  text-decoration: underline;
+}
+
+/* Focus glow */
+.ql-container.ql-snow:focus-within {
+  border-color: rgba(212, 175, 55, 0.5) !important;
+  outline: none;
+}
+.ql-toolbar.ql-snow:has(+ .ql-container.ql-snow:focus-within) {
+  border-color: rgba(212, 175, 55, 0.5) !important;
+}

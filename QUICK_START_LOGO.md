@@ -115,7 +115,7 @@ frontend/
 Fetch current logo
 
 ```bash
-curl http://localhost:5000/api/settings
+curl https://spiritual-revamp.onrender.com/api/settings
 ```
 
 Response:
@@ -135,7 +135,7 @@ Response:
 Upload new logo (Admin only)
 
 ```bash
-curl -X PUT http://localhost:5000/api/settings/logo \
+curl -X PUT https://spiritual-revamp.onrender.com/api/settings/logo \
   -H "Authorization: Bearer <token>" \
   -F "logo=@logo.png" \
   -F "logoWidth=150px" \

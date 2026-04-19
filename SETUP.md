@@ -90,7 +90,7 @@ npm run dev
 |---|---|---|
 | Store | http://localhost:5173 | — |
 | Admin | http://localhost:5174 | admin@spiritual-revamp.in / Admin@123 |
-| API | http://localhost:5000/api | — |
+| API | https://spiritual-revamp.onrender.com/api | — |
 
 ---
 

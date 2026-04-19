@@ -292,7 +292,7 @@ db.sitesettings.findOne()
 ### 2. Test API Endpoint
 ```bash
 # GET settings
-curl http://localhost:5000/api/settings
+curl https://spiritual-revamp.onrender.com/api/settings
 
 # Response:
 {
@@ -309,7 +309,7 @@ curl http://localhost:5000/api/settings
 ### 3. Test Upload
 ```bash
 # PUT logo (FormData)
-curl -X PUT http://localhost:5000/api/settings/logo \
+curl -X PUT https://spiritual-revamp.onrender.com/api/settings/logo \
   -H "Authorization: Bearer <token>" \
   -F "logo=@logo.png" \
   -F "logoWidth=150px" \

@@ -247,7 +247,7 @@ db.sitesettings.findOne()
 
 ### View Current Logo Settings
 ```bash
-curl http://localhost:5000/api/settings
+curl https://spiritual-revamp.onrender.com/api/settings
 ```
 
 ### Check Database

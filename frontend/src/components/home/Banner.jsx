@@ -3,9 +3,9 @@ const Banner = ({ desktopImage, mobileImage, alt = "banner", link = "/" }) => {
     <div className="w-full">
       <a href={"https://spiritual-revamp.vercel.app/collections"}>
         <picture>
-          <source media="(max-width: 768px)" srcSet={"https://res.cloudinary.com/df9ftwtis/image/upload/v1776063024/spiritual-revamp/media/wh3wyjdj7jzuazkibxyo.webp"} />
+          <source media="(max-width: 768px)" srcSet={"https://res.cloudinary.com/df9ftwtis/image/upload/v1776689258/spiritual-revamp/media/ljfuidnpcmtvg7smjc1q.png"} />
           <img
-            src={"https://res.cloudinary.com/df9ftwtis/image/upload/v1776063024/spiritual-revamp/media/yva3i8ndznacirrvkc7o.webp"}
+            src={"https://res.cloudinary.com/df9ftwtis/image/upload/v1776689259/spiritual-revamp/media/wwlf1tajydzqaxezhpdb.png"}
             alt={alt}
             className="w-full h-auto object-cover"
           />

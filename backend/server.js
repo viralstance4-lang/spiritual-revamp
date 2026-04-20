@@ -54,8 +54,27 @@ io.on('connection', (socket) => {
 // Helper exported so controllers can emit without importing io
 app.emitAdminEvent = (event, data) => io.to('admin').emit(event, data);
 
-// Connect to MongoDB
-connectDB();
+// Connect to MongoDB then ensure permanent admin exists
+const User = require('./src/models/User');
+
+async function ensureAdmin() {
+  const email = process.env.ADMIN_EMAIL;
+  const password = process.env.ADMIN_PASSWORD;
+  if (!email || !password) return;
+
+  const existing = await User.findOne({ email });
+  if (existing) {
+    if (existing.role !== 'admin') {
+      await User.findByIdAndUpdate(existing._id, { role: 'admin' });
+      console.log(`✅ Admin role enforced for ${email}`);
+    }
+  } else {
+    await User.create({ name: 'Admin', email, password, role: 'admin', isVerified: true });
+    console.log(`✅ Admin user created: ${email}`);
+  }
+}
+
+connectDB().then(ensureAdmin).catch(console.error);
 
 // Security middleware
 app.use(helmet());

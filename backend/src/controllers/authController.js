@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken');
 
 // Link any unlinked guest orders with this email to the user account
 async function claimGuestOrders(userId, email) {
-  if (!email || email.endsWith('@soulstone.internal')) return;
+  if (!email || email.endsWith('@spiritualrevampse.internal')) return;
   await Order.updateMany(
     {
       $or: [{ user: null }, { user: { $exists: false } }],
@@ -206,7 +206,7 @@ exports.sendOtp = async (req, res) => {
   let maskedEmail = '';
   if (channel === 'none') {
     const existingUser = await User.findOne({ phone });
-    if (existingUser?.email && !existingUser.email.endsWith('@soulstone.internal')) {
+    if (existingUser?.email && !existingUser.email.endsWith('@spiritualrevampse.internal')) {
       emailSent = await sendOtpEmail(existingUser.email, otp, phone);
       if (emailSent) {
         // Mask email for display: su***@gmail.com
@@ -279,7 +279,7 @@ exports.verifyOtp = async (req, res) => {
       });
     }
     // Generate a placeholder email so the unique index doesn't conflict
-    const placeholderEmail = `phone_${phone}@soulstone.internal`;
+    const placeholderEmail = `phone_${phone}@spiritualrevampse.internal`;
     user = await User.create({
       name: name.trim(),
       email: placeholderEmail,

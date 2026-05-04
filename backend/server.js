@@ -79,13 +79,24 @@ connectDB().then(ensureAdmin).catch(console.error);
 // Security middleware
 app.use(helmet());
 
-// Rate limiting
+// Rate limiting — skip entirely in development
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 200,
+  max: 500,
+  skip: () => process.env.NODE_ENV === 'development',
   message: 'Too many requests from this IP, please try again later.',
 });
+
+// Stricter limiter only for auth routes (brute-force protection in production)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  skip: () => process.env.NODE_ENV === 'development',
+  message: 'Too many login attempts, please try again after 15 minutes.',
+});
+
 app.use('/api', limiter);
+app.use('/api/auth', authLimiter);
 
 // CORS
 app.use(cors({

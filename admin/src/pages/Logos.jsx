@@ -213,7 +213,7 @@ export default function Logos() {
               <input
                 value={form.logoAlt}
                 onChange={e => setForm(f => ({ ...f, logoAlt: e.target.value }))}
-                placeholder="e.g. SoulStone logo"
+                placeholder="e.g. Spiritualrevampse logo"
                 className="w-full bg-dark-400 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-white/20 focus:outline-none focus:border-gold-500/50 transition-colors"
               />
             </div>

@@ -84,10 +84,10 @@ export default function Navbar() {
               ) : (
                 <>
                   <div className="w-8 h-8 rounded-full bg-gold-gradient flex items-center justify-center text-dark-400 font-bold text-sm">
-                    SS
+                    SR
                   </div>
                   <span className="font-serif text-xl font-semibold text-white">
-                    Soul<span className="text-gold-gradient">Stone</span>
+                    Spiritual<span className="text-gold-gradient"> Revamp</span>
                   </span>
                 </>
               )}

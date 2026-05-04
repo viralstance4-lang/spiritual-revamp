@@ -106,7 +106,7 @@ exports.createOrder = async (req, res) => {
 
 exports.getMyOrders = async (req, res) => {
   const email = req.user.email?.toLowerCase().trim();
-  const query = email && !email.endsWith('@soulstone.internal')
+  const query = email && !email.endsWith('@spiritualrevampse.internal')
     ? { $or: [{ user: req.user.id }, { 'guestInfo.email': email }] }
     : { user: req.user.id };
 
@@ -120,7 +120,7 @@ exports.getOrder = async (req, res) => {
   let query;
   if (req.user) {
     const email = req.user.email?.toLowerCase().trim();
-    const byEmail = email && !email.endsWith('@soulstone.internal')
+    const byEmail = email && !email.endsWith('@spiritualrevampse.internal')
       ? { 'guestInfo.email': email }
       : null;
     query = byEmail

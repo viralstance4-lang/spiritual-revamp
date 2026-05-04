@@ -223,7 +223,7 @@ spiritual-revamp/
 | Code | Discount |
 |---|---|
 | `WELCOME10` | 10% off |
-| `SOULSTONE20` | 20% off |
+| `SPIRITUALREVAMPSE20` | 20% off |
 
 To add more, edit `backend/src/controllers/orderController.js` → `createOrder` function.
 

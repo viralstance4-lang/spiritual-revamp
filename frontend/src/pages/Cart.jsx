@@ -218,7 +218,7 @@ export default function Cart() {
                     </button>
                   </div>
                   <p className="text-xs text-white/30 mb-4 text-center">
-                    Try: WELCOME10 or SOULSTONE20
+                    Try: WELCOME10 or SPIRITUALREVAMPSE20
                   </p>
                 </>
               )}

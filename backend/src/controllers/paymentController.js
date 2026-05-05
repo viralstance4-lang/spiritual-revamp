@@ -26,7 +26,7 @@ exports.createRazorpayOrder = async (req, res) => {
     },
   };
 
-  const rzpOrder = await razorpay.orders.create(options);
+  const rzpOrder = await getRazorpay().orders.create(options);
 
   order.razorpayOrderId = rzpOrder.id;
   await order.save();

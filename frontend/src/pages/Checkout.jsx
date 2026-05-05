@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ChevronRight, CreditCard, Truck, Lock, CheckCircle } from 'lucide-react';
@@ -25,6 +25,14 @@ export default function Checkout() {
     city: '', state: '', pincode: '',
   });
   const [paymentMethod, setPaymentMethod] = useState('razorpay');
+
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    document.body.appendChild(script);
+    return () => { document.body.removeChild(script); };
+  }, []);
 
   // Recompute shipping whenever payment method or cart changes
   const shippingCharge = calcShipping(subtotal, paymentMethod, shippingSettings);
@@ -108,6 +116,10 @@ export default function Checkout() {
         modal: { ondismiss: () => toast.error('Payment cancelled') },
       };
 
+      if (!window.Razorpay) {
+        toast.error('Payment gateway not loaded. Please refresh and try again.');
+        return;
+      }
       const rzp = new window.Razorpay(options);
       rzp.open();
     } catch (err) {
@@ -128,9 +140,6 @@ export default function Checkout() {
 
   return (
     <div className="min-h-screen py-8 px-4 md:px-6 lg:px-8">
-      {/* Load Razorpay script */}
-      <script src="https://checkout.razorpay.com/v1/checkout.js" async />
-
       <div className="max-w-5xl mx-auto">
         {/* Header */}
         <div className="text-center mb-10">

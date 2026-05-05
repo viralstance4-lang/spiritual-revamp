@@ -5,7 +5,7 @@ import { SlidersHorizontal, Search, X } from 'lucide-react';
 import ProductCard from '../components/product/ProductCard';
 import { ProductCardSkeleton } from '../components/ui/Skeleton';
 import { CATEGORY_INFO } from '../data/products';
-import { productApi } from '../services/api';
+import api, { productApi } from '../services/api';
 
 const sortOptions = [
   { value: 'popular', label: 'Most Popular' },
@@ -30,13 +30,20 @@ export default function Collection() {
   const [search, setSearch] = useState(searchParams.get('search') || '');
   const [priceFilter, setPriceFilter] = useState('all');
   const [allProducts, setAllProducts] = useState([]);
+  const [dbCategories, setDbCategories] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch all active products from API once
+  // Fetch products and categories in parallel
   useEffect(() => {
     setLoading(true);
-    productApi.getAll({ limit: 200 })
-      .then(res => setAllProducts(res.data.products || []))
+    Promise.all([
+      productApi.getAll({ limit: 200 }),
+      api.get('/categories'),
+    ])
+      .then(([pRes, cRes]) => {
+        setAllProducts(pRes.data.products || []);
+        setDbCategories(cRes.data.categories || []);
+      })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
@@ -45,11 +52,16 @@ export default function Collection() {
     setActiveCategory(category || 'all');
     setSearch(searchParams.get('search') || '');
     setPriceFilter('all');
-    const info = CATEGORY_INFO[category];
-    document.title = info
-      ? `${info.label} Bracelets | spiritual-revamp`
-      : 'All Collections | spiritual-revamp';
   }, [category, searchParams]);
+
+  // Update page title whenever active category or DB categories load
+  useEffect(() => {
+    const info = CATEGORY_INFO[activeCategory]
+      || dbCategories.find(c => c.slug === activeCategory);
+    document.title = info
+      ? `${info.label || info.name} Bracelets | spiritual-revamp`
+      : 'All Collections | spiritual-revamp';
+  }, [activeCategory, dbCategories]);
 
   useEffect(() => {
     const newParams = new URLSearchParams(searchParams);
@@ -91,7 +103,13 @@ export default function Collection() {
     return result;
   }, [allProducts, activeCategory, search, priceFilter, sort]);
 
-  const currentInfo = CATEGORY_INFO[activeCategory];
+  const currentDbCat = dbCategories.find(c => c.slug === activeCategory);
+  const currentInfo = CATEGORY_INFO[activeCategory] || (currentDbCat ? {
+    label: currentDbCat.name,
+    emoji: currentDbCat.emoji || '✨',
+    description: currentDbCat.description || '',
+    color: currentDbCat.color || '#D4AF37',
+  } : null);
   const hasFilters = search || priceFilter !== 'all' || activeCategory !== 'all';
 
   const resetFilters = () => {
@@ -162,17 +180,17 @@ export default function Collection() {
             >
               All
             </button>
-            {Object.entries(CATEGORY_INFO).map(([key, info]) => (
+            {(dbCategories.length > 0 ? dbCategories : Object.entries(CATEGORY_INFO).map(([key, info]) => ({ slug: key, name: info.label, emoji: info.emoji }))).map(cat => (
               <button
-                key={key}
-                onClick={() => setActiveCategory(key)}
+                key={cat.slug}
+                onClick={() => setActiveCategory(cat.slug)}
                 className={`badge text-xs px-4 py-2 transition-all cursor-pointer ${
-                  activeCategory === key
+                  activeCategory === cat.slug
                     ? 'bg-gold-500 text-dark-400 border-gold-500'
                     : 'glass text-white/60 hover:text-white'
                 }`}
               >
-                {info.emoji} {info.label.split(' ')[0]}
+                {cat.emoji} {cat.name.split(' ')[0]}
               </button>
             ))}
           </div>

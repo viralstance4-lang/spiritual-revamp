@@ -9,8 +9,8 @@ const footerLinks = {
     { label: 'All Products',         to: '/collections' },
     { label: 'Money Bracelets',      to: '/collections/money' },
     { label: 'Protection Bracelets', to: '/collections/protection' },
-    { label: 'Love Bracelets',       to: '/collections/love' },
-    { label: 'Energy Bracelets',     to: '/collections/energy' },
+    { label: 'Love Bracelets',       to: '/collections/love-and-relationships' },
+    { label: 'Energy Bracelets',     to: '/collections/energy-and-motivation' },
   ],
   help: [
     { label: 'About Us',    to: '/about' },

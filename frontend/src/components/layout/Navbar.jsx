@@ -14,8 +14,8 @@ const navLinks = [
     children: [
       { label: '💰 Money & Abundance', to: '/collections/money' },
       { label: '🛡️ Protection', to: '/collections/protection' },
-      { label: '💗 Love & Relationships', to: '/collections/love' },
-      { label: '⚡ Energy & Motivation', to: '/collections/energy' },
+      { label: '💗 Love & Relationships', to: '/collections/love-and-relationships' },
+      { label: '⚡ Energy & Motivation', to: '/collections/energy-and-motivation' },
     ],
   },
   { label: 'About', to: '/about' },

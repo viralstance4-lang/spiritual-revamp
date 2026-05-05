@@ -7,13 +7,15 @@ const {
   createCategory,
   updateCategory,
   deleteCategory,
+  migrateCategories,
 } = require('../controllers/categoryController');
 
-// Public — frontend uses this
+// Public
 router.get('/', getPublishedCategories);
 
 // Admin
 router.get('/admin', protect, adminOnly, getAllCategories);
+router.post('/migrate', protect, adminOnly, migrateCategories);
 router.post('/', protect, adminOnly, createCategory);
 router.put('/:id', protect, adminOnly, updateCategory);
 router.delete('/:id', protect, adminOnly, deleteCategory);

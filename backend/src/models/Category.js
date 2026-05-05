@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const slugify = require('../utils/slugify');
 
 const categorySchema = new mongoose.Schema({
   name: {
@@ -16,7 +17,6 @@ const categorySchema = new mongoose.Schema({
   emoji: { type: String, default: '✨' },
   color: { type: String, default: '#D4AF37' },
   imageUrl: String,
-  // 'draft' = hidden from frontend, 'published' = visible
   status: {
     type: String,
     enum: ['draft', 'published'],
@@ -25,12 +25,10 @@ const categorySchema = new mongoose.Schema({
   order: { type: Number, default: 0 },
 }, { timestamps: true });
 
+// Always regenerate slug when name changes (or on first save if slug missing)
 categorySchema.pre('save', function (next) {
-  if (this.isModified('name')) {
-    this.slug = this.name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
+  if (this.isModified('name') || !this.slug) {
+    this.slug = slugify(this.name);
   }
   next();
 });

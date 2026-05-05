@@ -196,6 +196,25 @@ export default function Categories() {
   const [loading, setLoading]       = useState(true);
   const [modal, setModal]           = useState(null); // null | 'create' | categoryObj
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [migrating, setMigrating]   = useState(false);
+
+  const handleMigrate = async () => {
+    setMigrating(true);
+    try {
+      const res = await api.post('/categories/migrate');
+      const { results } = res.data;
+      if (results.length === 0) {
+        toast.success('All slugs already correct — nothing to fix!');
+      } else {
+        results.forEach(r => toast.success(`"${r.name}": ${r.oldSlug} → ${r.newSlug} (${r.productsFixed} products fixed)`));
+      }
+      fetch();
+    } catch {
+      toast.error('Migration failed');
+    } finally {
+      setMigrating(false);
+    }
+  };
 
   const fetch = useCallback(async () => {
     setLoading(true);
@@ -244,6 +263,15 @@ export default function Categories() {
         <div className="flex gap-2">
           <button onClick={fetch} className="btn-outline py-2 px-3 text-sm flex items-center gap-2">
             <RefreshCw className="w-4 h-4" />
+          </button>
+          <button
+            onClick={handleMigrate}
+            disabled={migrating}
+            title="Fix all category slugs & sync products"
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-orange-500 hover:bg-orange-400 disabled:opacity-60 text-white font-semibold text-sm rounded-xl transition-all"
+          >
+            {migrating ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+            Fix All Data
           </button>
           <button
             onClick={() => setModal('create')}

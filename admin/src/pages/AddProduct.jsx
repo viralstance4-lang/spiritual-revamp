@@ -16,6 +16,15 @@ const QUILL_MODULES = {
   ],
 };
 
+const slugify = str =>
+  (str || '')
+    .toLowerCase()
+    .replace(/&/g, 'and')
+    .replace(/[^a-z0-9\s-]/g, '')
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-');
+
 const emptyProduct = {
   name: '', tagline: '', description: '', category: '', categoryId: '',
   intention: '', price: '', comparePrice: '', costPrice: '',
@@ -310,7 +319,7 @@ export default function AddProduct() {
                 setForm(f => ({
                   ...f,
                   categoryId: cat?._id || '',
-                  category:   cat?.slug || cat?.name?.toLowerCase() || '',
+                  category:   cat?.slug || slugify(cat?.name || ''),
                 }));
               }}
               className="input"

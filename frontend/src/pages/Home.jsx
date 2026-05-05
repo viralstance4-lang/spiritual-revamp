@@ -5,7 +5,7 @@ import TrustBadges from '../components/home/TrustBadges';
 import CategoryGrid from '../components/home/CategoryGrid';
 import ProductHighlights from '../components/home/ProductHighlights';
 import StorySection from '../components/home/StorySection';
-import UrgencySection from '../components/home/UrgencySection';
+// import UrgencySection from '../components/home/UrgencySection';
 import Testimonials from '../components/home/Testimonials';
 import InstagramFeed from '../components/home/InstagramFeed';
 
@@ -22,7 +22,7 @@ export default function Home() {
       <CategoryGrid />
       <ProductHighlights />
       <StorySection />
-      <UrgencySection />
+      {/* <UrgencySection /> */}
       <Testimonials />
       <InstagramFeed />
     </>

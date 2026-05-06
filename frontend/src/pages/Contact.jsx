@@ -50,10 +50,10 @@ export default function Contact() {
           {/* Contact info */}
           <div className="md:col-span-2 space-y-5">
             {[
-              { icon: Mail, label: 'Email Us', value: 'hello@spiritual-revamp.in', sub: 'Reply within 24 hours' },
+              { icon: Mail, label: 'Email Us', value: 'revampspiritual@gmail.com', href: 'mailto:revampspiritual@gmail.com', sub: 'Reply within 24 hours' },
               { icon: Phone, label: 'Call / WhatsApp', value: '+91 98765 43210', sub: 'Mon-Sat, 10am-7pm IST' },
-              { icon: MapPin, label: 'Based in', value: 'Mumbai, India', sub: 'Shipping pan-India' },
-            ].map(({ icon: Icon, label, value, sub }) => (
+              { icon: MapPin, label: 'Address', value: 'Scheme No 7, 13/6 CS, Shastri Nagar, Nai Sarak, Meerut, Uttar Pradesh 250004', sub: 'Shipping pan-India' },
+            ].map(({ icon: Icon, label, value, href, sub }) => (
               <motion.div
                 key={label}
                 initial={{ opacity: 0, x: -20 }}
@@ -65,7 +65,10 @@ export default function Contact() {
                 </div>
                 <div>
                   <p className="text-xs text-white/40 mb-0.5">{label}</p>
-                  <p className="font-medium text-white text-sm">{value}</p>
+                  {href
+                    ? <a href={href} className="font-medium text-white text-sm hover:text-gold-400 transition-colors">{value}</a>
+                    : <p className="font-medium text-white text-sm">{value}</p>
+                  }
                   <p className="text-xs text-white/40">{sub}</p>
                 </div>
               </motion.div>

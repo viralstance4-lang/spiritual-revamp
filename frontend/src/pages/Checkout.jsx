@@ -144,7 +144,7 @@ export default function Checkout() {
         {/* Header */}
         <div className="text-center mb-10">
           <Link to="/" className="inline-flex items-center gap-2 mb-6">
-            <div className="w-7 h-7 rounded-full bg-gold-gradient flex items-center justify-center text-dark-400 font-bold text-xs">SS</div>
+            <div className="w-7 h-7 rounded-full bg-gold-gradient flex items-center justify-center text-dark-400 font-bold text-xs">SR</div>
             <span className="font-serif text-lg font-semibold text-white">spiritual-revamp</span>
           </Link>
           {/* Steps */}
@@ -185,7 +185,7 @@ export default function Checkout() {
                   <div className="col-span-2 sm:col-span-1">
                     <label className="block text-xs text-white/50 mb-1.5">Full Name *</label>
                     <input name="name" value={address.name} onChange={handleAddressChange}
-                      className="input" placeholder="Priya Sharma" />
+                      className="input" placeholder="Your Full Name" />
                   </div>
                   <div className="col-span-2 sm:col-span-1">
                     <label className="block text-xs text-white/50 mb-1.5">Phone *</label>
@@ -195,7 +195,7 @@ export default function Checkout() {
                   <div className="col-span-2">
                     <label className="block text-xs text-white/50 mb-1.5">Email *</label>
                     <input name="email" type="email" value={address.email} onChange={handleAddressChange}
-                      className="input" placeholder="priya@email.com" />
+                      className="input" placeholder="Your Email Address" />
                   </div>
                   <div className="col-span-2">
                     <label className="block text-xs text-white/50 mb-1.5">Address Line 1 *</label>
@@ -210,7 +210,7 @@ export default function Checkout() {
                   <div>
                     <label className="block text-xs text-white/50 mb-1.5">City *</label>
                     <input name="city" value={address.city} onChange={handleAddressChange}
-                      className="input" placeholder="Mumbai" />
+                      className="input" placeholder="Your City" />
                   </div>
                   <div>
                     <label className="block text-xs text-white/50 mb-1.5">Pincode *</label>

@@ -257,7 +257,7 @@ export default function Login() {
         {/* Logo */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2 mb-4">
-            <div className="w-10 h-10 rounded-full bg-gold-gradient flex items-center justify-center text-dark-400 font-bold">SS</div>
+            <div className="w-10 h-10 rounded-full bg-gold-gradient flex items-center justify-center text-dark-400 font-bold">SR</div>
           </Link>
           <h1 className="font-serif text-2xl font-semibold text-white mb-1">
             {authMode === 'otp' ? 'OTP Login' : mode === 'login' ? 'Welcome Back' : 'Join spiritual-revamp'}

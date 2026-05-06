@@ -15,7 +15,7 @@ export default function InstagramFeed() {
     <section className="py-20 px-4 md:px-6 lg:px-8 max-w-7xl mx-auto">
       <div className="text-center mb-10">
         <motion.a
-          href="https://instagram.com/spiritual-revamp.in"
+          href="https://www.instagram.com/spiritual.revamp/"
           target="_blank"
           rel="noopener noreferrer"
           initial={{ opacity: 0, y: 20 }}
@@ -24,7 +24,7 @@ export default function InstagramFeed() {
           className="inline-flex items-center gap-2 mb-4 hover:opacity-80 transition-opacity cursor-pointer"
         >
           <Instagram className="w-5 h-5 text-gold-400" />
-          <span className="text-sm text-gold-400 font-medium">@spiritual-revamp.in</span>
+          <span className="text-sm text-gold-400 font-medium">@spiritual.revamp</span>
         </motion.a>
         <motion.h2
           initial={{ opacity: 0, y: 20 }}
@@ -40,7 +40,7 @@ export default function InstagramFeed() {
         {posts.map((url, i) => (
           <motion.a
             key={i}
-            href="https://virallstance.com"
+            href="https://www.instagram.com/spiritual.revamp/"
             target="_blank"
             rel="noopener noreferrer"
             initial={{ opacity: 0, scale: 0.95 }}

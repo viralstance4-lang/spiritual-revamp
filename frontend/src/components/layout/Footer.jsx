@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Instagram, Youtube, Mail, Phone, MapPin, Heart } from 'lucide-react';
+import { Instagram, Youtube, Facebook, Mail, Phone, MapPin, Heart } from 'lucide-react';
 import api from '../../services/api';
 import { useSiteLogo } from '../../context/SiteLogoContext';
 
@@ -108,7 +108,7 @@ export default function Footer() {
                 />
               ) : (
                 <>
-                  <div className="w-8 h-8 rounded-full bg-gold-gradient flex items-center justify-center text-dark-400 font-bold text-sm">SS</div>
+                  <div className="w-8 h-8 rounded-full bg-gold-gradient flex items-center justify-center text-dark-400 font-bold text-sm">SR</div>
                   <span className="font-serif text-xl font-semibold text-white">Soul<span className="text-gold-gradient">Stone</span></span>
                 </>
               )}
@@ -117,8 +117,12 @@ export default function Footer() {
               Handcrafted crystal bracelets rooted in ancient Vedic wisdom. Trusted by 50,000+ spiritual seekers across India.
             </p>
             <div className="flex gap-3">
-              {[{ Icon: Instagram, href: '#', label: 'Instagram' }, { Icon: Youtube, href: '#', label: 'YouTube' }].map(({ Icon, href, label }) => (
-                <a key={label} href={href} aria-label={label}
+              {[
+                { Icon: Instagram, href: 'https://www.instagram.com/spiritual.revamp/', label: 'Instagram' },
+                { Icon: Youtube,   href: 'https://www.youtube.com/@SpiritualRevamp',   label: 'YouTube'   },
+                { Icon: Facebook,  href: 'https://www.facebook.com/people/Spiritual-Revamp/61580764503945/', label: 'Facebook' },
+              ].map(({ Icon, href, label }) => (
+                <a key={label} href={href} aria-label={label} target="_blank" rel="noopener noreferrer"
                   className="w-9 h-9 glass rounded-full flex items-center justify-center text-white/50 hover:text-gold-400 hover:border-gold-500/40 transition-all">
                   <Icon className="w-4 h-4" />
                 </a>
@@ -155,13 +159,16 @@ export default function Footer() {
             <h4 className="text-sm font-semibold uppercase tracking-widest text-white/40 mb-5">Contact</h4>
             <ul className="space-y-4">
               {[
-                { Icon: Mail,    text: 'hello@spiritual-revamp.in' },
-                { Icon: Phone,   text: '+91 98765 43210' },
-                { Icon: MapPin,  text: 'Mumbai, Maharashtra, India' },
-              ].map(({ Icon, text }) => (
+                { Icon: Mail,   text: 'revampspiritual@gmail.com', href: 'mailto:revampspiritual@gmail.com' },
+                { Icon: Phone,  text: '+91 98765 43210' },
+                { Icon: MapPin, text: 'Scheme No 7, Shastri Nagar, Nai Sarak, Meerut, UP 250004' },
+              ].map(({ Icon, text, href }) => (
                 <li key={text} className="flex items-start gap-3">
                   <Icon className="w-4 h-4 text-gold-500 flex-shrink-0 mt-0.5" />
-                  <span className="text-sm text-white/60">{text}</span>
+                  {href
+                    ? <a href={href} className="text-sm text-white/60 hover:text-gold-400 transition-colors">{text}</a>
+                    : <span className="text-sm text-white/60">{text}</span>
+                  }
                 </li>
               ))}
             </ul>

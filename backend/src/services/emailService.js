@@ -13,6 +13,9 @@ const transporterOptions = {
   tls: {
     rejectUnauthorized: false,
   },
+  connectionTimeout: 5000,
+  greetingTimeout: 5000,
+  socketTimeout: 8000,
 };
 
 if (process.env.SMTP_HOST?.includes('gmail.com')) {

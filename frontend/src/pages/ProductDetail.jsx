@@ -237,7 +237,7 @@ export default function ProductDetail() {
               <span className="font-bold text-4xl text-white">
                 ₹{product.price.toLocaleString('en-IN')}
               </span>
-              {product.comparePrice && (
+              {product.comparePrice > 0 && (
                 <span className="text-xl text-white/40 line-through">
                   ₹{product.comparePrice.toLocaleString('en-IN')}
                 </span>

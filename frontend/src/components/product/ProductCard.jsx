@@ -104,7 +104,7 @@ export default function ProductCard({ product, index = 0 }) {
             <span className="font-bold text-lg text-white">
               ₹{product.price.toLocaleString('en-IN')}
             </span>
-            {product.comparePrice && (
+            {product.comparePrice > 0 && (
               <span className="text-sm text-white/40 line-through">
                 ₹{product.comparePrice.toLocaleString('en-IN')}
               </span>

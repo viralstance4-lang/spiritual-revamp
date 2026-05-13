@@ -122,24 +122,24 @@ export default function Collection() {
   return (
     <div className="min-h-screen">
       {/* Hero banner */}
-      <div className="relative py-20 px-4 text-center overflow-hidden bg-dark-50/50">
+      <div className="relative py-8 md:py-10 px-4 text-center overflow-hidden bg-dark-50/50">
         <div className="absolute inset-0 bg-radial-gold pointer-events-none" />
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="relative z-10"
         >
-          <p className="text-xs uppercase tracking-widest text-gold-500 mb-3 font-medium">
+          <p className="text-xs uppercase tracking-widest text-gold-500 mb-2 font-medium">
             {currentInfo ? 'Category' : 'Shop All'}
           </p>
-          <h1 className="section-title mb-4">
+          <h1 className="text-2xl md:text-3xl font-bold text-white mb-0">
             {currentInfo
               ? <>{currentInfo.emoji} {currentInfo.label}</>
               : <>All <span className="text-gold-gradient">Collections</span></>
             }
           </h1>
           {currentInfo && (
-            <p className="section-subtitle max-w-md mx-auto">{currentInfo.description}</p>
+            <p className="text-sm text-white/50 max-w-md mx-auto mt-2">{currentInfo.description}</p>
           )}
         </motion.div>
       </div>

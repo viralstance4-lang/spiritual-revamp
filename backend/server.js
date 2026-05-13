@@ -148,7 +148,19 @@ app.use('/api',             subscribeRoutes);
 
 // Health check
 app.get('/api/health', (_req, res) => {
-  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+  const mongoose = require('mongoose');
+  const dbState = ['disconnected', 'connected', 'connecting', 'disconnecting'];
+  res.json({
+    status: 'OK',
+    timestamp: new Date().toISOString(),
+    db: dbState[mongoose.connection.readyState] || 'unknown',
+    env: {
+      mongo: !!process.env.MONGO_URI,
+      razorpay: !!process.env.RAZORPAY_KEY_ID,
+      jwt: !!process.env.JWT_SECRET,
+      nodeEnv: process.env.NODE_ENV || 'not set',
+    },
+  });
 });
 
 // 404 handler

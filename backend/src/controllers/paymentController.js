@@ -13,6 +13,11 @@ const getRazorpay = () => new Razorpay({
 
 // Create Razorpay order
 exports.createRazorpayOrder = async (req, res) => {
+  if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+    console.error('[Razorpay] Missing RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET in environment');
+    return res.status(500).json({ success: false, message: 'Payment gateway not configured. Please contact support.' });
+  }
+
   const { orderId } = req.body;
 
   const order = await Order.findById(orderId);

@@ -32,8 +32,12 @@ const httpServer = http.createServer(app);
 
 // ── Socket.io ──────────────────────────────────────────────────────────────────
 const allowedOrigins = [
+  'https://spiritualrevamp.com',
+  'https://www.spiritualrevamp.com',
   process.env.FRONTEND_URL || 'http://localhost:5173',
   process.env.ADMIN_URL    || 'http://localhost:5174',
+  // Extra origins from env (comma-separated) — set ALLOWED_ORIGINS on Render/Vercel
+  ...(process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim()) : []),
 ];
 
 const io = new SocketServer(httpServer, {
@@ -107,6 +111,9 @@ app.use(cors({
   origin: (origin, callback) => {
     if (process.env.NODE_ENV === 'development') return callback(null, true);
     if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    // Allow any .vercel.app subdomain (preview deployments)
+    if (origin?.endsWith('.vercel.app')) return callback(null, true);
+    console.warn(`[CORS] Blocked origin: ${origin}`);
     callback(new Error('Not allowed by CORS'));
   },
   credentials: true,

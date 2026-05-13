@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ChevronRight, CreditCard, Truck, Lock, CheckCircle } from 'lucide-react';
 import { useCart, calcShipping } from '../context/CartContext';
-import { orderApi, paymentApi } from '../services/api';
+import { orderApi, paymentApi, warmupBackend } from '../services/api';
 import toast from 'react-hot-toast';
 
 const INDIAN_STATES = [
@@ -33,6 +33,9 @@ export default function Checkout() {
     document.body.appendChild(script);
     return () => { document.body.removeChild(script); };
   }, []);
+
+  // Wake up Render backend as soon as checkout page opens
+  useEffect(() => { warmupBackend(); }, []);
 
   // Recompute shipping whenever payment method or cart changes
   const shippingCharge = calcShipping(subtotal, paymentMethod, shippingSettings);

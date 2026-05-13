@@ -6,13 +6,21 @@ const baseURL = import.meta.env.VITE_API_URL
 
 const api = axios.create({
   baseURL,
-  timeout: 60000,
+  timeout: 90000,
 });
 
 // Pre-warm Render backend on app load (prevents cold start delay on first order)
 if (!isLocalhost) {
-  axios.get(`${baseURL.replace('/api', '')}/api/health`, { timeout: 10000 }).catch(() => {});
+  axios.get(`${baseURL}/health`, { timeout: 15000 }).catch(() => {});
 }
+
+// Call this from Checkout page to ensure backend is warm before order
+export const warmupBackend = () => {
+  if (!isLocalhost) {
+    return axios.get(`${baseURL}/health`, { timeout: 60000 }).catch(() => {});
+  }
+  return Promise.resolve();
+};
 
 // Request interceptor — attach token
 api.interceptors.request.use(config => {

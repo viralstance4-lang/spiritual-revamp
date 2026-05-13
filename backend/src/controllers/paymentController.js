@@ -1,6 +1,8 @@
 const Razorpay = require('razorpay');
 const crypto = require('crypto');
 const Order = require('../models/Order');
+const User = require('../models/User');
+const { sendOrderConfirmationEmail } = require('../services/emailService');
 
 // ✅ Fixed — lazy init, won't crash on startup
 
@@ -68,6 +70,14 @@ exports.verifyPayment = async (req, res) => {
   order.razorpaySignature = razorpay_signature;
   await order.save();
 
+  try {
+    const emailTo = order.guestInfo?.email ||
+      (order.user ? (await User.findById(order.user).select('email'))?.email : null);
+    if (emailTo) await sendOrderConfirmationEmail(order, emailTo);
+  } catch (emailErr) {
+    console.error('[Email] Failed to send confirmation:', emailErr.message);
+  }
+
   res.json({ success: true, order });
 };
 
@@ -90,10 +100,20 @@ exports.webhook = async (req, res) => {
   if (event === 'payment.captured') {
     const paymentId = payload.payment.entity.id;
     const razorpayOrderId = payload.payment.entity.order_id;
-    await Order.findOneAndUpdate(
+    const order = await Order.findOneAndUpdate(
       { razorpayOrderId },
-      { paymentStatus: 'paid', orderStatus: 'confirmed', razorpayPaymentId: paymentId }
+      { paymentStatus: 'paid', orderStatus: 'confirmed', razorpayPaymentId: paymentId },
+      { new: true }
     );
+    if (order) {
+      try {
+        const emailTo = order.guestInfo?.email ||
+          (order.user ? (await User.findById(order.user).select('email'))?.email : null);
+        if (emailTo) await sendOrderConfirmationEmail(order, emailTo);
+      } catch (emailErr) {
+        console.error('[Email] Webhook email failed:', emailErr.message);
+      }
+    }
   }
 
   if (event === 'payment.failed') {

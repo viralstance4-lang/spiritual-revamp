@@ -6,8 +6,13 @@ const baseURL = import.meta.env.VITE_API_URL
 
 const api = axios.create({
   baseURL,
-  timeout: 30000,
+  timeout: 60000,
 });
+
+// Pre-warm Render backend on app load (prevents cold start delay on first order)
+if (!isLocalhost) {
+  axios.get(`${baseURL.replace('/api', '')}/api/health`, { timeout: 10000 }).catch(() => {});
+}
 
 // Request interceptor — attach token
 api.interceptors.request.use(config => {

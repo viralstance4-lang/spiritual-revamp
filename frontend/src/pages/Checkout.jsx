@@ -289,7 +289,7 @@ export default function Checkout() {
                     {loading ? (
                       <span className="flex items-center gap-2">
                         <div className="w-4 h-4 border-2 border-dark-400/30 border-t-dark-400 rounded-full animate-spin" />
-                        Processing...
+                        Placing Order... (may take 30–60 sec)
                       </span>
                     ) : (
                       <>

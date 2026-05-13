@@ -112,7 +112,7 @@ const sendOrderConfirmationEmail = async (order, email) => {
 
         <!-- Footer -->
         <div style="text-align:center;color:rgba(255,255,255,0.3);font-size:12px;">
-          <p>Questions? WhatsApp us at <a href="https://wa.me/919999999999" style="color:#D4AF37;">+91 9999999999</a></p>
+          <p>Questions? WhatsApp us at <a href="https://wa.me/919876543210" style="color:#D4AF37;">+91 9876543210</a></p>
           <p style="margin-top:8px;">© 2025 spiritual-revamp. Handcrafted with ✨ intention.</p>
         </div>
       </div>

@@ -81,12 +81,14 @@ exports.createOrder = async (req, res) => {
 
   const order = await Order.create(orderData);
 
-  // Send order confirmation email
-  try {
-    const emailTo = req.user?.email || guestInfo?.email;
-    if (emailTo) await sendOrderConfirmationEmail(order, emailTo);
-  } catch (emailErr) {
-    console.error('[Email] Failed to send confirmation:', emailErr.message);
+  // Send confirmation email only for COD (online payment sends after Razorpay verify)
+  if (paymentMethod === 'cod') {
+    try {
+      const emailTo = req.user?.email || guestInfo?.email;
+      if (emailTo) await sendOrderConfirmationEmail(order, emailTo);
+    } catch (emailErr) {
+      console.error('[Email] Failed to send confirmation:', emailErr.message);
+    }
   }
 
   // Decrement stock
@@ -198,6 +200,23 @@ exports.updateOrderStatus = async (req, res) => {
 
   await order.save();
   res.json({ success: true, order });
+};
+
+exports.deleteOrder = async (req, res) => {
+  const order = await Order.findById(req.params.id);
+  if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
+
+  // Restore stock only if order was active (not already cancelled)
+  if (order.orderStatus !== 'cancelled') {
+    for (const item of order.items) {
+      await Product.findByIdAndUpdate(item.product, {
+        $inc: { stock: item.quantity, sold: -item.quantity },
+      });
+    }
+  }
+
+  await order.deleteOne();
+  res.json({ success: true, message: 'Order deleted' });
 };
 
 exports.getDashboardStats = async (req, res) => {

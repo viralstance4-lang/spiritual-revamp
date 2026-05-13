@@ -8,6 +8,7 @@ const {
   getAllOrders,
   getAdminOrder,
   updateOrderStatus,
+  deleteOrder,
   getDashboardStats,
 } = require('../controllers/orderController');
 
@@ -19,6 +20,7 @@ router.get('/admin/all', protect, adminOnly, getAllOrders);
 router.get('/admin/stats', protect, adminOnly, getDashboardStats);
 router.get('/admin/:id', protect, adminOnly, getAdminOrder);
 router.put('/admin/:id/status', protect, adminOnly, updateOrderStatus);
+router.delete('/admin/:id', protect, adminOnly, deleteOrder);
 
 // Public order tracking by orderId string (no auth required)
 // Also before /:id so 'track' isn't treated as an order _id

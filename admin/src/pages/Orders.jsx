@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Download, Search, RefreshCw, X, User, Phone, Mail, MapPin,
   Package, CreditCard, Truck, Clock, ChevronRight, Loader2,
-  CheckCircle, XCircle, AlertCircle,
+  CheckCircle, XCircle, AlertCircle, Trash2,
 } from 'lucide-react';
 import api from '../services/api';
 import toast from 'react-hot-toast';
@@ -50,10 +50,12 @@ function PaymentBadge({ method, paymentStatus }) {
 }
 
 // ─── Order Detail Drawer ────────────────────────────────────────────────────────
-function OrderDetailDrawer({ orderId, onClose, onStatusUpdated }) {
+function OrderDetailDrawer({ orderId, onClose, onStatusUpdated, onDeleted }) {
   const [order, setOrder]       = useState(null);
   const [loading, setLoading]   = useState(true);
   const [saving, setSaving]     = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [newStatus, setNewStatus]   = useState('');
   const [tracking, setTracking]     = useState('');
   const [trackingUrl, setTrackingUrl] = useState('');
@@ -95,6 +97,20 @@ function OrderDetailDrawer({ orderId, onClose, onStatusUpdated }) {
     }
   };
 
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      await api.delete(`/orders/admin/${order._id}`);
+      toast.success(`Order #${order.orderId} deleted`);
+      onDeleted(order._id);
+      onClose();
+    } catch {
+      toast.error('Failed to delete order');
+      setDeleting(false);
+      setConfirmDelete(false);
+    }
+  };
+
   const addr = order?.shippingAddress;
   const email = order?.guestInfo?.email || order?.user?.email || '—';
   const isFinalStatus = order?.orderStatus === 'delivered' || order?.orderStatus === 'cancelled';
@@ -126,10 +142,44 @@ function OrderDetailDrawer({ orderId, onClose, onStatusUpdated }) {
               #{order?.orderId || '…'}
             </h2>
           </div>
-          <button onClick={onClose} className="p-2 rounded-xl hover:bg-white/10 transition-colors">
-            <X className="w-5 h-5 text-white/60" />
-          </button>
+          <div className="flex items-center gap-2">
+            {order && !confirmDelete && (
+              <button
+                onClick={() => setConfirmDelete(true)}
+                className="p-2 rounded-xl hover:bg-red-500/20 text-white/40 hover:text-red-400 transition-colors"
+                title="Delete order"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            )}
+            <button onClick={onClose} className="p-2 rounded-xl hover:bg-white/10 transition-colors">
+              <X className="w-5 h-5 text-white/60" />
+            </button>
+          </div>
         </div>
+
+        {/* Delete confirmation bar */}
+        {confirmDelete && (
+          <div className="flex items-center justify-between gap-3 px-5 py-3 bg-red-500/10 border-b border-red-500/20 flex-shrink-0">
+            <p className="text-sm text-red-300">Delete this order permanently?</p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setConfirmDelete(false)}
+                className="px-3 py-1 text-xs rounded-lg border border-white/20 text-white/60 hover:text-white transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="px-3 py-1 text-xs rounded-lg bg-red-500 hover:bg-red-400 text-white font-semibold transition-colors disabled:opacity-60 flex items-center gap-1"
+              >
+                {deleting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
+                {deleting ? 'Deleting…' : 'Yes, Delete'}
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Scrollable body */}
         <div className="flex-1 overflow-y-auto p-5 space-y-5">
@@ -428,6 +478,12 @@ export default function Orders() {
     setOrders(prev => prev.map(o => o._id === orderId ? { ...o, orderStatus: newStatus } : o));
   };
 
+  const handleOrderDeleted = (orderId) => {
+    setOrders(prev => prev.filter(o => o._id !== orderId));
+    setTotal(prev => prev - 1);
+    setSelectedId(null);
+  };
+
   const exportCSV = () => {
     if (!orders.length) { toast.error('No orders to export'); return; }
     const headers = ['Order ID','Date','Customer','Phone','Email','City','State','Pincode','Items','Subtotal','Shipping','Discount','Total','Payment Method','Payment Status','Order Status','Tracking'];
@@ -603,6 +659,7 @@ export default function Orders() {
             orderId={selectedId}
             onClose={() => setSelectedId(null)}
             onStatusUpdated={handleStatusUpdated}
+            onDeleted={handleOrderDeleted}
           />
         )}
       </AnimatePresence>

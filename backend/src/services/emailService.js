@@ -1,25 +1,9 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 const { SiteSettings } = require('../models/ShippingSettings');
 
-const smtpPassword = process.env.SMTP_PASS?.replace(/\s+/g, '');
-
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'smtp.gmail.com',
-  port: 465,
-  secure: true,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: smtpPassword,
-  },
-  tls: { rejectUnauthorized: false },
-  connectionTimeout: 15000,
-  greetingTimeout: 15000,
-  socketTimeout: 20000,
-});
-
 const sendOrderConfirmationEmail = async (order, email) => {
-  if (!process.env.SMTP_USER || !smtpPassword) {
-    console.log('[Email] Skipped — SMTP_USER or SMTP_PASS not set');
+  if (!process.env.RESEND_API_KEY) {
+    console.log('[Email] Skipped — RESEND_API_KEY not set');
     return;
   }
 
@@ -118,12 +102,13 @@ const sendOrderConfirmationEmail = async (order, email) => {
 
   const subject = `✨ Order Confirmed — #${order.orderId} | ${brandName}`;
 
-  await transporter.sendMail({
-    from: `"${brandName}" <${process.env.FROM_EMAIL || process.env.SMTP_USER}>`,
-    to: email,
-    subject,
-    html,
-  });
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  const from = process.env.RESEND_FROM
+    ? `${brandName} <${process.env.RESEND_FROM}>`
+    : 'Spiritual Revamp <onboarding@resend.dev>';
+
+  const { error } = await resend.emails.send({ from, to: email, subject, html });
+  if (error) throw new Error(`Resend: ${error.message}`);
   console.log(`[Email] Confirmation sent to ${email}`);
 };
 

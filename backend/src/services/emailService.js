@@ -1,24 +1,15 @@
 const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 const { SiteSettings } = require('../models/ShippingSettings');
 
-// ── Resend API (preferred for cloud hosting) ──────────────────────────────────
+// ── Resend SDK (preferred for cloud hosting) ──────────────────────────────────
 const sendViaResend = async (to, subject, html, fromName) => {
-  const res = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      from: `${fromName} <${process.env.RESEND_FROM || 'onboarding@resend.dev'}>`,
-      to: [to],
-      subject,
-      html,
-    }),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(`Resend error: ${data.message || res.status}`);
-  return data;
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  const from = process.env.RESEND_FROM
+    ? `${fromName} <${process.env.RESEND_FROM}>`
+    : 'Spiritual Revamp <onboarding@resend.dev>';
+  const { error } = await resend.emails.send({ from, to, subject, html });
+  if (error) throw new Error(`Resend error: ${error.message}`);
 };
 
 // ── Gmail SMTP fallback ───────────────────────────────────────────────────────

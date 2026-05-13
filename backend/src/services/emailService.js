@@ -1,36 +1,25 @@
 const nodemailer = require('nodemailer');
-const { Resend } = require('resend');
 const { SiteSettings } = require('../models/ShippingSettings');
 
-// ── Resend SDK (preferred for cloud hosting) ──────────────────────────────────
-const sendViaResend = async (to, subject, html, fromName) => {
-  const resend = new Resend(process.env.RESEND_API_KEY);
-  const from = process.env.RESEND_FROM
-    ? `${fromName} <${process.env.RESEND_FROM}>`
-    : 'Spiritual Revamp <onboarding@resend.dev>';
-  const { error } = await resend.emails.send({ from, to, subject, html });
-  if (error) throw new Error(`Resend error: ${error.message}`);
-};
-
-// ── Gmail SMTP fallback ───────────────────────────────────────────────────────
 const smtpPassword = process.env.SMTP_PASS?.replace(/\s+/g, '');
+
 const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false,
-  auth: { user: process.env.SMTP_USER, pass: smtpPassword },
+  host: process.env.SMTP_HOST || 'smtp.gmail.com',
+  port: 465,
+  secure: true,
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: smtpPassword,
+  },
   tls: { rejectUnauthorized: false },
-  connectionTimeout: 5000,
-  greetingTimeout: 5000,
-  socketTimeout: 8000,
+  connectionTimeout: 15000,
+  greetingTimeout: 15000,
+  socketTimeout: 20000,
 });
 
 const sendOrderConfirmationEmail = async (order, email) => {
-  const hasResend = !!process.env.RESEND_API_KEY;
-  const hasSmtp  = !!process.env.SMTP_USER && process.env.SMTP_USER !== 'hello@spiritual-revamp.in';
-
-  if (!hasResend && !hasSmtp) {
-    console.log(`[Email] Skipped — no email provider configured`);
+  if (!process.env.SMTP_USER || !smtpPassword) {
+    console.log('[Email] Skipped — SMTP_USER or SMTP_PASS not set');
     return;
   }
 
@@ -129,17 +118,13 @@ const sendOrderConfirmationEmail = async (order, email) => {
 
   const subject = `✨ Order Confirmed — #${order.orderId} | ${brandName}`;
 
-  if (hasResend) {
-    await sendViaResend(email, subject, html, brandName);
-  } else {
-    await transporter.sendMail({
-      from: `"${brandName}" <${process.env.FROM_EMAIL || process.env.SMTP_USER}>`,
-      to: email,
-      subject,
-      html,
-    });
-  }
-  console.log(`[Email] Confirmation sent to ${email} via ${hasResend ? 'Resend' : 'Gmail SMTP'}`);
+  await transporter.sendMail({
+    from: `"${brandName}" <${process.env.FROM_EMAIL || process.env.SMTP_USER}>`,
+    to: email,
+    subject,
+    html,
+  });
+  console.log(`[Email] Confirmation sent to ${email}`);
 };
 
 module.exports = { sendOrderConfirmationEmail };

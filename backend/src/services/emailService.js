@@ -1,32 +1,45 @@
 const nodemailer = require('nodemailer');
 const { SiteSettings } = require('../models/ShippingSettings');
 
+// ── Resend API (preferred for cloud hosting) ──────────────────────────────────
+const sendViaResend = async (to, subject, html, fromName) => {
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: `${fromName} <${process.env.RESEND_FROM || 'onboarding@resend.dev'}>`,
+      to: [to],
+      subject,
+      html,
+    }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(`Resend error: ${data.message || res.status}`);
+  return data;
+};
+
+// ── Gmail SMTP fallback ───────────────────────────────────────────────────────
 const smtpPassword = process.env.SMTP_PASS?.replace(/\s+/g, '');
-const transporterOptions = {
-  host: process.env.SMTP_HOST || 'smtp.gmail.com',
-  port: Number(process.env.SMTP_PORT) || 587,
-  secure: process.env.SMTP_SECURE === 'true',
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: smtpPassword,
-  },
-  tls: {
-    rejectUnauthorized: false,
-  },
+const transporter = nodemailer.createTransport({
+  host: 'smtp.gmail.com',
+  port: 587,
+  secure: false,
+  auth: { user: process.env.SMTP_USER, pass: smtpPassword },
+  tls: { rejectUnauthorized: false },
   connectionTimeout: 5000,
   greetingTimeout: 5000,
   socketTimeout: 8000,
-};
-
-if (process.env.SMTP_HOST?.includes('gmail.com')) {
-  transporterOptions.service = 'gmail';
-}
-
-const transporter = nodemailer.createTransport(transporterOptions);
+});
 
 const sendOrderConfirmationEmail = async (order, email) => {
-  if (!process.env.SMTP_USER || process.env.SMTP_USER === 'hello@spiritual-revamp.in') {
-    console.log(`[Email] Skipped (SMTP not configured) — would send to ${email}`);
+  const hasResend = !!process.env.RESEND_API_KEY;
+  const hasSmtp  = !!process.env.SMTP_USER && process.env.SMTP_USER !== 'hello@spiritual-revamp.in';
+
+  if (!hasResend && !hasSmtp) {
+    console.log(`[Email] Skipped — no email provider configured`);
     return;
   }
 
@@ -123,13 +136,19 @@ const sendOrderConfirmationEmail = async (order, email) => {
     </html>
   `;
 
-  await transporter.sendMail({
-    from: `"${process.env.FROM_NAME || 'spiritual-revamp'}" <${process.env.FROM_EMAIL || process.env.SMTP_USER}>`,
-    to: email,
-    subject: `✨ Order Confirmed — #${order.orderId} | spiritual-revamp`,
-    html,
-  });
-  console.log(`[Email] Order confirmation sent to ${email}`);
+  const subject = `✨ Order Confirmed — #${order.orderId} | ${brandName}`;
+
+  if (hasResend) {
+    await sendViaResend(email, subject, html, brandName);
+  } else {
+    await transporter.sendMail({
+      from: `"${brandName}" <${process.env.FROM_EMAIL || process.env.SMTP_USER}>`,
+      to: email,
+      subject,
+      html,
+    });
+  }
+  console.log(`[Email] Confirmation sent to ${email} via ${hasResend ? 'Resend' : 'Gmail SMTP'}`);
 };
 
 module.exports = { sendOrderConfirmationEmail };

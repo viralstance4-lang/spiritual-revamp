@@ -146,6 +146,34 @@ app.use('/api/policies',    policyRoutes);
 app.use('/api/newsletter',  newsletterRoutes);
 app.use('/api',             subscribeRoutes);
 
+// Email test (temporary debug endpoint)
+app.get('/api/test-email', async (req, res) => {
+  const to = req.query.to;
+  if (!to) return res.json({ success: false, error: 'Pass ?to=youremail@gmail.com' });
+  try {
+    const nodemailer = require('nodemailer');
+    const pass = process.env.SMTP_PASS?.replace(/\s+/g, '');
+    const t = nodemailer.createTransport({
+      host: process.env.SMTP_HOST || 'smtp.gmail.com',
+      port: 465,
+      secure: true,
+      auth: { user: process.env.SMTP_USER, pass },
+      tls: { rejectUnauthorized: false },
+      connectionTimeout: 15000,
+      greetingTimeout: 15000,
+    });
+    await t.sendMail({
+      from: `"Test" <${process.env.SMTP_USER}>`,
+      to,
+      subject: 'SMTP Test — Spiritual Revamp',
+      text: 'SMTP is working correctly from Render!',
+    });
+    res.json({ success: true, message: `Email sent to ${to}` });
+  } catch (err) {
+    res.json({ success: false, error: err.message, code: err.code });
+  }
+});
+
 // Health check
 app.get('/api/health', (_req, res) => {
   const mongoose = require('mongoose');

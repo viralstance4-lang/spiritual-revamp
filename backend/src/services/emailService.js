@@ -1,9 +1,23 @@
-const { Resend } = require('resend');
+const nodemailer = require('nodemailer');
 const { SiteSettings } = require('../models/ShippingSettings');
 
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || 'smtp-relay.brevo.com',
+  port: Number(process.env.SMTP_PORT) || 587,
+  secure: false,
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+  tls: { rejectUnauthorized: false },
+  connectionTimeout: 15000,
+  greetingTimeout: 15000,
+  socketTimeout: 20000,
+});
+
 const sendOrderConfirmationEmail = async (order, email) => {
-  if (!process.env.RESEND_API_KEY) {
-    console.log('[Email] Skipped — RESEND_API_KEY not set');
+  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+    console.log('[Email] Skipped — SMTP credentials not set');
     return;
   }
 
@@ -102,14 +116,13 @@ const sendOrderConfirmationEmail = async (order, email) => {
 
   const subject = `✨ Order Confirmed — #${order.orderId} | ${brandName}`;
 
-  const resend = new Resend(process.env.RESEND_API_KEY);
-  const from = process.env.RESEND_FROM
-    ? `${brandName} <${process.env.RESEND_FROM}>`
-    : 'Spiritual Revamp <onboarding@resend.dev>';
-
-  const { error } = await resend.emails.send({ from, to: email, subject, html });
-  if (error) throw new Error(`Resend: ${error.message}`);
-  console.log(`[Email] Confirmation sent to ${email}`);
+  await transporter.sendMail({
+    from: `"${brandName}" <${process.env.SMTP_USER}>`,
+    to: email,
+    subject,
+    html,
+  });
+  console.log(`[Email] Confirmation sent to ${email} via Brevo SMTP`);
 };
 
 module.exports = { sendOrderConfirmationEmail };

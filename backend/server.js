@@ -8,6 +8,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
+const compression = require('compression');
 const connectDB = require('./src/config/db');
 
 // Route imports
@@ -78,6 +79,9 @@ connectDB().then(ensureAdmin).catch(console.error);
 
 // Security middleware
 app.use(helmet());
+
+// Gzip compression — reduces JSON response size by ~70%
+app.use(compression());
 
 // Rate limiting — skip entirely in development
 const limiter = rateLimit({

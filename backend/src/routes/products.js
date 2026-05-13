@@ -13,9 +13,17 @@ const {
   getRelatedProducts,
 } = require('../controllers/productController');
 
+// Cache middleware for public GET routes (5 min in production)
+const cachePublic = (_req, res, next) => {
+  if (process.env.NODE_ENV !== 'development') {
+    res.set('Cache-Control', 'public, max-age=300, stale-while-revalidate=60');
+  }
+  next();
+};
+
 // Static/specific routes before wildcards
-router.get('/', getAllProducts);
-router.get('/featured', getFeaturedProducts);
+router.get('/', cachePublic, getAllProducts);
+router.get('/featured', cachePublic, getFeaturedProducts);
 
 // Admin routes (specific paths before wildcard /:slug)
 router.post('/upload/images', protect, adminOnly, upload.array('images', 5), uploadProductImages);

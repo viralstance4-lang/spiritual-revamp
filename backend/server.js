@@ -146,6 +146,28 @@ app.use('/api/policies',    policyRoutes);
 app.use('/api/newsletter',  newsletterRoutes);
 app.use('/api',             subscribeRoutes);
 
+// Resend test endpoint
+app.get('/api/test-email', async (req, res) => {
+  const to = req.query.to;
+  if (!to) return res.json({ error: 'Pass ?to=email@gmail.com' });
+  try {
+    const { Resend } = require('resend');
+    const key = process.env.RESEND_API_KEY;
+    if (!key) return res.json({ success: false, error: 'RESEND_API_KEY not set on server' });
+    const resend = new Resend(key);
+    const { data, error } = await resend.emails.send({
+      from: 'Spiritual Revamp <onboarding@resend.dev>',
+      to,
+      subject: 'Test Email — Spiritual Revamp',
+      html: '<p>Email is working from Render! ✅</p>',
+    });
+    if (error) return res.json({ success: false, error: error.message });
+    res.json({ success: true, id: data.id, message: `Sent to ${to}` });
+  } catch (err) {
+    res.json({ success: false, error: err.message });
+  }
+});
+
 // Health check
 app.get('/api/health', (_req, res) => {
   const mongoose = require('mongoose');

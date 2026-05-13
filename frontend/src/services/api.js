@@ -1,7 +1,11 @@
 import axios from 'axios';
 
+const isLocalhost = typeof window !== 'undefined' && window.location.hostname === 'localhost';
+const baseURL = import.meta.env.VITE_API_URL
+  || (isLocalhost ? '/api' : 'https://spiritual-revamp.onrender.com/api');
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api',
+  baseURL,
   timeout: 30000,
 });
 

@@ -77,11 +77,7 @@ export default function OrderConfirmation() {
           </div>
 
           <div className="flex flex-col gap-3">
-            <Link to="/account" className="btn-outline w-full justify-center">
-              <Package className="w-4 h-4" />
-              Track Your Order
-            </Link>
-            <Link to="/collections" className="btn-ghost w-full justify-center">
+<Link to="/collections" className="btn-ghost w-full justify-center">
               Continue Shopping
               <ArrowRight className="w-4 h-4" />
             </Link>

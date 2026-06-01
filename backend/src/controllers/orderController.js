@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Order = require('../models/Order');
 const Product = require('../models/Product');
 const User = require('../models/User');
+const ShippingSettings = require('../models/ShippingSettings');
 const { calculateShipping } = require('./shippingController');
 const { applyCouponToOrder } = require('./couponController');
 const { sendOrderConfirmationEmail } = require('../services/emailService');
@@ -17,6 +18,16 @@ exports.createOrder = async (req, res) => {
     isGift,
     giftMessage,
   } = req.body;
+
+  // Server-side COD availability guard — reject even if frontend was bypassed
+  if (paymentMethod === 'cod') {
+    const s = await ShippingSettings.findOne().lean();
+    // treat undefined (field not yet in DB) as enabled; only block when explicitly false
+    const codEnabled = s ? s.codEnabled !== false : true;
+    if (!codEnabled) {
+      return res.status(400).json({ success: false, message: 'Cash on Delivery is currently unavailable. Please pay online.' });
+    }
+  }
 
   // Validate products & calculate totals
   let subtotal = 0;

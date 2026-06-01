@@ -60,9 +60,10 @@ export default function ProductHighlights() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.1 }}
-          className="section-subtitle max-w-xl mx-auto"
+          className="section-subtitle max-w-3xl mx-auto"
         >
-          Each creation carries a deeper meaning, made to resonate with your personal path. Trust what draws you in it&rsquo;s meant for you.
+          Each creation carries a deeper meaning, made to resonate with your personal path.
+          <br />Trust what draws you in — it&rsquo;s meant for you.
         </motion.p>
       </div>
 

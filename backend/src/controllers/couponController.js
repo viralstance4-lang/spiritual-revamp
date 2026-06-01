@@ -106,16 +106,29 @@ exports.deleteCoupon = async (req, res) => {
 };
 
 // ─── Helper: apply coupon in order creation ───────────────────────────────────
-// Called by orderController — increments usedCount
+// Atomic findOneAndUpdate prevents race condition where two simultaneous orders
+// could both pass the usageLimit check before either increments the counter.
 exports.applyCouponToOrder = async (code, subtotal) => {
   if (!code) return 0;
-  const coupon = await Coupon.findOne({ code: code.toUpperCase().trim(), isActive: true });
-  if (!coupon) return 0;
-  if (coupon.expiresAt && new Date() > coupon.expiresAt) return 0;
-  if (coupon.usageLimit > 0 && coupon.usedCount >= coupon.usageLimit) return 0;
-  if (subtotal < coupon.minOrderValue) return 0;
 
-  const amount = computeDiscount(coupon, subtotal);
-  await Coupon.findByIdAndUpdate(coupon._id, { $inc: { usedCount: 1 } });
-  return amount;
+  const now = new Date();
+  const normalised = code.toUpperCase().trim();
+
+  // Single atomic operation: match all validity conditions AND increment in one step
+  const coupon = await Coupon.findOneAndUpdate(
+    {
+      code: normalised,
+      isActive: true,
+      $or: [{ expiresAt: null }, { expiresAt: { $gt: now } }],
+      $and: [
+        { $or: [{ usageLimit: 0 }, { $expr: { $lt: ['$usedCount', '$usageLimit'] } }] },
+        { $or: [{ minOrderValue: { $lte: subtotal } }, { minOrderValue: { $exists: false } }] },
+      ],
+    },
+    { $inc: { usedCount: 1 } },
+    { new: false } // return the doc before increment to compute discount on original values
+  );
+
+  if (!coupon) return 0;
+  return computeDiscount(coupon, subtotal);
 };

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Save, Truck, CreditCard, Loader2, RefreshCw, Info, Image, Upload, X } from 'lucide-react';
+import { Save, Truck, CreditCard, Loader2, RefreshCw, Info, Image, Upload, X, ToggleLeft, ToggleRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../services/api';
 import { useSiteLogo } from '../context/SiteLogoContext';
@@ -102,10 +102,12 @@ export default function Settings() {
   const [form, setForm] = useState({
     prepaidFreeThreshold: 499,
     prepaidCharge:        79,
+    codEnabled:           true,
     codThreshold:         499,
     codChargeBelow:       79,
     codChargeAbove:       20,
   });
+  const [codToggling, setCodToggling] = useState(false);
 
   const [logoForm, setLogoForm] = useState({
     logoUrl: '',
@@ -128,7 +130,11 @@ export default function Settings() {
       api.get('/settings'),
     ])
       .then(([shippingRes, siteRes]) => {
-        if (shippingRes.data?.settings) setForm(shippingRes.data.settings);
+        if (shippingRes.data?.settings) {
+          const s = shippingRes.data.settings;
+          // codEnabled may be absent in existing DB docs — default to true
+          setForm(f => ({ ...f, ...s, codEnabled: s.codEnabled !== false }));
+        }
         if (siteRes.data?.settings) {
           setLogoForm(siteRes.data.settings);
           setLogoPreview(siteRes.data.settings.logoUrl || '');
@@ -153,6 +159,20 @@ export default function Settings() {
       toast.error(err.response?.data?.message || 'Save failed');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleToggleCod = async () => {
+    const newVal = !form.codEnabled;
+    setCodToggling(true);
+    try {
+      await api.put('/settings/shipping', { codEnabled: newVal });
+      setForm(f => ({ ...f, codEnabled: newVal }));
+      toast.success(newVal ? 'COD Enabled Successfully' : 'COD Disabled Successfully');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to update COD status');
+    } finally {
+      setCodToggling(false);
     }
   };
 
@@ -335,6 +355,61 @@ export default function Settings() {
             <div className="bg-purple-500/10 border border-purple-500/20 rounded-xl p-3 text-xs text-purple-300">
               ✨ Your logo will update instantly across dashboard, website header & footer
             </div>
+          </div>
+        </Section>
+      </motion.div>
+
+      {/* COD Toggle */}
+      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
+        <Section title="Payment Settings" icon={CreditCard} iconColor="bg-green-500/15 text-green-400">
+          <div className="flex items-center justify-between gap-6 flex-wrap">
+            {/* Info */}
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-white mb-1">Cash on Delivery (COD)</p>
+              <p className="text-xs text-white/40 leading-relaxed">
+                When disabled, COD is hidden from checkout and all COD order attempts are blocked server-side.
+              </p>
+            </div>
+
+            {/* Badge + Toggle */}
+            <div className="flex items-center gap-3 flex-shrink-0">
+              <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${
+                form.codEnabled
+                  ? 'bg-green-500/15 text-green-400 border-green-500/30'
+                  : 'bg-red-500/15 text-red-400 border-red-500/30'
+              }`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${form.codEnabled ? 'bg-green-400' : 'bg-red-400'}`} />
+                {form.codEnabled ? 'Enabled' : 'Disabled'}
+              </span>
+
+              <button
+                onClick={handleToggleCod}
+                disabled={codToggling}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all disabled:opacity-60 ${
+                  form.codEnabled
+                    ? 'bg-red-500/15 hover:bg-red-500/25 text-red-400 border border-red-500/30'
+                    : 'bg-green-500/15 hover:bg-green-500/25 text-green-400 border border-green-500/30'
+                }`}
+              >
+                {codToggling
+                  ? <Loader2 className="w-4 h-4 animate-spin" />
+                  : form.codEnabled
+                    ? <><ToggleRight className="w-4 h-4" /> Turn OFF</>
+                    : <><ToggleLeft className="w-4 h-4" /> Turn ON</>
+                }
+              </button>
+            </div>
+          </div>
+
+          <div className={`rounded-xl p-3 text-xs border ${
+            form.codEnabled
+              ? 'bg-green-500/10 border-green-500/20 text-green-300'
+              : 'bg-red-500/10 border-red-500/20 text-red-300'
+          }`}>
+            {form.codEnabled
+              ? '✓ COD is currently available — customers can choose "Cash on Delivery" at checkout.'
+              : '✗ COD is disabled — only online payment (Razorpay) is available at checkout.'
+            }
           </div>
         </Section>
       </motion.div>

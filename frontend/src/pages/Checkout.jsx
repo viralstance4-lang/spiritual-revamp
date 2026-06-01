@@ -20,6 +20,9 @@ export default function Checkout() {
   const [step, setStep] = useState(1); // 1=address, 2=payment
   const [loading, setLoading] = useState(false);
 
+  // COD availability — default true until settings load, then respect admin toggle
+  const codEnabled = shippingSettings ? shippingSettings.codEnabled !== false : true;
+
   const [address, setAddress] = useState({
     name: '', phone: '', email: '', line1: '', line2: '',
     city: '', state: '', pincode: '',
@@ -36,6 +39,11 @@ export default function Checkout() {
 
   // Wake up Render backend as soon as checkout page opens
   useEffect(() => { warmupBackend(); }, []);
+
+  // Auto-switch to Razorpay if admin disables COD while user is on checkout
+  useEffect(() => {
+    if (!codEnabled && paymentMethod === 'cod') setPaymentMethod('razorpay');
+  }, [codEnabled, paymentMethod]);
 
   // Recompute shipping whenever payment method or cart changes
   const shippingCharge = calcShipping(subtotal, paymentMethod, shippingSettings);
@@ -148,7 +156,7 @@ export default function Checkout() {
         <div className="text-center mb-10">
           <Link to="/" className="inline-flex items-center gap-2 mb-6">
             <div className="w-7 h-7 rounded-full bg-gold-gradient flex items-center justify-center text-dark-400 font-bold text-xs">SR</div>
-            <span className="font-serif text-lg font-semibold text-white">spiritual-revamp</span>
+            <span className="font-serif text-lg font-semibold text-white">Spiritual <span className="text-gold-gradient">Revamp</span></span>
           </Link>
           {/* Steps */}
           <div className="flex items-center justify-center gap-2">
@@ -253,7 +261,7 @@ export default function Checkout() {
                 <div className="space-y-3 mb-6">
                   {[
                     { value: 'razorpay', label: 'Pay Online', sublabel: 'UPI, Cards, Netbanking, Wallets', icon: CreditCard },
-                    { value: 'cod', label: 'Cash on Delivery', sublabel: 'Pay when your order arrives', icon: Truck },
+                    ...(codEnabled ? [{ value: 'cod', label: 'Cash on Delivery', sublabel: 'Pay when your order arrives', icon: Truck }] : []),
                   ].map(opt => (
                     <label
                       key={opt.value}

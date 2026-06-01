@@ -77,15 +77,11 @@ export default function HeroSection() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
-              className="font-serif text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-semibold text-white leading-[1.1] mb-6"
+              className="font-serif text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-semibold text-white leading-[1.15] mb-6"
             >
-              Wear Your
+              Wear Your <span className="text-gold-gradient">Intentions.</span>
               <br />
-              <span className="text-gold-gradient">Intentions.</span>
-              <br />
-              Transform Your
-              <br />
-              <span className="text-gold-gradient">Reality.</span>
+              Transform Your <span className="text-gold-gradient">Reality.</span>
             </motion.h1>
 
             {/* Sub-copy */}

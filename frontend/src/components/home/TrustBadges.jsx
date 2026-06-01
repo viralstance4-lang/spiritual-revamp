@@ -5,9 +5,9 @@ const badges = [
   { icon: Truck, title: 'Free Shipping', desc: 'On orders above ₹499', color: 'text-green-400' },
   // { icon: RotateCcw, title: '7-Day Returns', desc: 'No questions asked', color: 'text-blue-400' },
   { icon: Shield, title: 'Authentic Crystals', desc: '100% certified genuine', color: 'text-gold-400' },
-  { icon: CreditCard, title: 'COD Available', desc: 'Pay on delivery', color: 'text-purple-400' },
+  // { icon: CreditCard, title: 'COD Available', desc: 'Pay on delivery', color: 'text-purple-400' },
   // { icon: Award, title: '50K+ Happy Souls', desc: 'Loved across India', color: 'text-orange-400' },
-  { icon: Headphones, title: '24/7 Support', desc: 'We\'re always here', color: 'text-pink-400' },
+  { icon: Headphones, title: '24/7 Support', desc: 'info@sukhdeyiindia.com', color: 'text-pink-400' },
 ];
 
 // Marquee ticker items
@@ -16,7 +16,7 @@ const ticker = [
   '🔮 100% Authentic Crystals',
   '⭐ 4.8/5 Rating — 3,971 Reviews',
   '🚚 Fast Delivery Across India',
-  '💳 COD Available Everywhere',
+  // '💳 COD Available Everywhere',
   '🎁 Gift Packaging Available',
   // '🔄 Easy 7-Day Returns',
   '🌙 Charged Under Full Moon',
@@ -44,7 +44,7 @@ export default function TrustBadges() {
 
       {/* Badge grid */}
       <section className="py-16 px-4 md:px-6 lg:px-8 max-w-7xl mx-auto">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="flex flex-wrap justify-center gap-4">
           {badges.map(({ icon: Icon, title, desc, color }, i) => (
             <motion.div
               key={title}
@@ -52,7 +52,7 @@ export default function TrustBadges() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.08, duration: 0.4 }}
-              className="glass rounded-2xl p-4 text-center hover:border-gold-500/20 transition-colors group"
+              className="glass rounded-2xl p-4 text-center hover:border-gold-500/20 transition-colors group flex-1 min-w-[140px] max-w-[280px]"
             >
               <div className={`${color} mb-2 flex justify-center`}>
                 <Icon className="w-6 h-6 group-hover:scale-110 transition-transform" />

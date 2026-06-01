@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Phone, MessageCircle, Send, MapPin } from 'lucide-react';
 import toast from 'react-hot-toast';
+import api from '../services/api';
 
 export default function Contact() {
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
@@ -9,11 +10,20 @@ export default function Contact() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!form.name.trim() || !form.email.trim() || !form.message.trim()) {
+      toast.error('Please fill in all required fields.');
+      return;
+    }
     setLoading(true);
-    await new Promise(r => setTimeout(r, 1000)); // simulate
-    toast.success("Message sent! We'll reply within 24 hours. ✨");
-    setForm({ name: '', email: '', subject: '', message: '' });
-    setLoading(false);
+    try {
+      const res = await api.post('/contact', form);
+      toast.success(res.data.message || "Message sent! We'll reply within 24 hours. ✨");
+      setForm({ name: '', email: '', subject: '', message: '' });
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Something went wrong. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -39,7 +49,7 @@ export default function Contact() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="section-subtitle max-w-md mx-auto"
+            className="section-subtitle max-w-xl mx-auto"
           >
             Questions about your order, your bracelet, or just need guidance on which one to choose?
             We're here.
@@ -50,9 +60,8 @@ export default function Contact() {
           {/* Contact info */}
           <div className="md:col-span-2 space-y-5">
             {[
-              { icon: Mail, label: 'Email Us', value: 'revampspiritual@gmail.com', href: 'mailto:revampspiritual@gmail.com', sub: 'Reply within 24 hours' },
-              { icon: Phone, label: 'Call / WhatsApp', value: '+91 98765 43210', sub: 'Mon-Sat, 10am-7pm IST' },
-              { icon: MapPin, label: 'Address', value: 'Scheme No 7, 13/6 CS, Shastri Nagar, Nai Sarak, Meerut, Uttar Pradesh 250004', sub: 'Shipping pan-India' },
+              { icon: Mail, label: 'Email Us', value: 'info@sukhdeyiindia.com', href: 'mailto:info@sukhdeyiindia.com', sub: 'Reply within 24 hours' },
+              { icon: MapPin, label: 'Address', value: 'Sector 144 Noida, UP- 201306', sub: 'Shipping pan-India' },
             ].map(({ icon: Icon, label, value, href, sub }) => (
               <motion.div
                 key={label}
@@ -76,7 +85,7 @@ export default function Contact() {
 
             {/* WhatsApp CTA */}
             <a
-              href="https://wa.me/919876543210?text=Hi!%20I%20have%20a%20question%20about%20spiritual-revamp"
+              href="https://wa.me/919876543210?text=Hi!%20I%20have%20a%20question%20about%20Spiritual%20Revamp"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-3 bg-green-500/10 border border-green-500/20 rounded-2xl p-5 hover:border-green-500/40 transition-colors"

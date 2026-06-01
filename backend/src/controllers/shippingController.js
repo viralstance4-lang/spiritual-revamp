@@ -5,6 +5,7 @@ const { SiteSettings } = require('../models/ShippingSettings');
 const DEFAULTS = {
   prepaidFreeThreshold: 499,
   prepaidCharge:        79,
+  codEnabled:           true,
   codThreshold:         499,
   codChargeBelow:       79,
   codChargeAbove:       20,
@@ -22,18 +23,22 @@ exports.updateShipping = async (req, res) => {
   const {
     prepaidFreeThreshold,
     prepaidCharge,
+    codEnabled,
     codThreshold,
     codChargeBelow,
     codChargeAbove,
   } = req.body;
 
-  // Validate: no negative charges
-  const fields = { prepaidFreeThreshold, prepaidCharge, codThreshold, codChargeBelow, codChargeAbove };
-  for (const [key, val] of Object.entries(fields)) {
+  // Validate numeric fields: no negative charges
+  const numericFields = { prepaidFreeThreshold, prepaidCharge, codThreshold, codChargeBelow, codChargeAbove };
+  for (const [key, val] of Object.entries(numericFields)) {
     if (val !== undefined && (isNaN(val) || Number(val) < 0)) {
       return res.status(400).json({ success: false, message: `${key} must be a non-negative number` });
     }
   }
+
+  const fields = { ...numericFields };
+  if (codEnabled !== undefined) fields.codEnabled = Boolean(codEnabled);
 
   const settings = await ShippingSettings.findOneAndUpdate(
     {},

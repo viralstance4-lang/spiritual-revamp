@@ -26,6 +26,7 @@ const categoryRoutes = require('./src/routes/categories');
 const policyRoutes      = require('./src/routes/policies');
 const newsletterRoutes  = require('./src/routes/newsletter');
 const subscribeRoutes   = require('./src/routes/subscribe');
+const contactRoutes     = require('./src/routes/contact');
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -144,10 +145,12 @@ app.use('/api/settings',   settingsRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/policies',    policyRoutes);
 app.use('/api/newsletter',  newsletterRoutes);
+app.use('/api/contact',     contactRoutes);
 app.use('/api',             subscribeRoutes);
 
-// SMTP test endpoint
-app.get('/api/test-email', async (req, res) => {
+// SMTP test endpoint — admin only
+const { protect, adminOnly } = require('./src/middleware/auth');
+app.get('/api/test-email', protect, adminOnly, async (req, res) => {
   const to = req.query.to;
   if (!to) return res.json({ error: 'Pass ?to=email@gmail.com' });
   try {

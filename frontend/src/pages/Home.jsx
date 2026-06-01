@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
 import Banner from '../components/home/Banner';
-import HeroSection from '../components/home/HeroSection';
 import TrustBadges from '../components/home/TrustBadges';
 import CategoryGrid from '../components/home/CategoryGrid';
 import ProductHighlights from '../components/home/ProductHighlights';
@@ -10,17 +9,16 @@ import InstagramFeed from '../components/home/InstagramFeed';
 
 export default function Home() {
   useEffect(() => {
-    document.title = 'spiritual-revamp — Premium Spiritual Bracelets | Money, Protection, Love, Energy';
+    document.title = 'Spiritual Revamp — Premium Crystal Bracelets | Money, Protection, Love, Energy';
   }, []);
 
   return (
     <>
-      <Banner/>
-      {/* <HeroSection /> */}
+      <Banner />
       <TrustBadges />
       <CategoryGrid />
       <ProductHighlights />
-      <StorySection />      
+      <StorySection />
       <Testimonials />
       <InstagramFeed />
     </>

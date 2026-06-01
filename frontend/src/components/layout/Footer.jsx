@@ -159,9 +159,9 @@ export default function Footer() {
             <h4 className="text-sm font-semibold uppercase tracking-widest text-white/40 mb-5">Contact</h4>
             <ul className="space-y-4">
               {[
-                { Icon: Mail,   text: 'revampspiritual@gmail.com', href: 'mailto:revampspiritual@gmail.com' },
-                { Icon: Phone,  text: '+91 98765 43210' },
-                { Icon: MapPin, text: 'Scheme No 7, Shastri Nagar, Nai Sarak, Meerut, UP 250004' },
+                { Icon: Mail,   text: 'info@sukhdeyiindia.com', href: 'mailto:info@sukhdeyiindia.com' },
+                // { Icon: Phone,  text: '+91 98765 43210' },
+                { Icon: MapPin, text: 'Sector 144 Noida, UP- 201306' },
               ].map(({ Icon, text, href }) => (
                 <li key={text} className="flex items-start gap-3">
                   <Icon className="w-4 h-4 text-gold-500 flex-shrink-0 mt-0.5" />
@@ -173,7 +173,7 @@ export default function Footer() {
               ))}
             </ul>
             <div className="mt-6 flex flex-wrap gap-2">
-              {['COD Available', 'Secure Payments'].map(badge => (
+              {[ 'Secure Payments'].map(badge => (
                 <span key={badge} className="badge-gold text-[10px]">✓ {badge}</span>
               ))}
             </div>
@@ -183,7 +183,7 @@ export default function Footer() {
         {/* Bottom bar */}
         <div className="mt-12 pt-6 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-xs text-white/30 text-center md:text-left">
-            © 2025 <span className="text-gold-400">Spiritual-Revamp Begin With in A unit of Sukhdeyi India Enterprises Pvt. Ltd.</span> All rights reserved. Developed by {' '}
+            © 2025 <span className="text-gold-400">Spiritual Revamp — A unit of Sukhdeyi India Enterprises Pvt. Ltd.</span> All rights reserved. Developed by {' '}
             <Heart className="w-3 h-3 inline text-red-500 mx-0.5" />{' '}
             <a 
               href="https://virallstance.com" 

@@ -121,7 +121,6 @@ productSchema.virtual('discountPercent').get(function () {
 
 productSchema.set('toJSON', { virtuals: true });
 
-productSchema.index({ slug: 1 });
 productSchema.index({ isActive: 1, isFeatured: -1, createdAt: -1 });
 productSchema.index({ isActive: 1, category: 1 });
 productSchema.index({ isActive: 1, isBestseller: 1 });

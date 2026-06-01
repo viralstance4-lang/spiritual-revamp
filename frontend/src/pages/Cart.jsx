@@ -218,7 +218,7 @@ export default function Cart() {
                     </button>
                   </div>
                   <p className="text-xs text-white/30 mb-4 text-center">
-                    Try: WELCOME10 or SPIRITUALREVAMPSE20
+                    Try: WELCOME10 or SOULSTONE20
                   </p>
                 </>
               )}
@@ -230,7 +230,7 @@ export default function Cart() {
 
               {/* COD badge */}
               <p className="text-xs text-center text-white/40">
-                🚚 COD Available &nbsp;|&nbsp; 🔒 Secure Checkout
+               &nbsp;|&nbsp; 🔒 Secure Checkout
               </p>
             </div>
           </div>

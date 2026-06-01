@@ -9,9 +9,10 @@ const shippingSettingsSchema = new mongoose.Schema(
 
     // ── COD ───────────────────────────────────────────────────────────────────
     // COD never has "free" shipping — just a higher vs lower surcharge
-    codThreshold:   { type: Number, default: 499 }, // subtotal threshold for COD tiers
-    codChargeBelow: { type: Number, default: 79  }, // COD charge when subtotal < threshold
-    codChargeAbove: { type: Number, default: 20  }, // COD charge when subtotal >= threshold
+    codEnabled:     { type: Boolean, default: true }, // global ON/OFF — admin toggles from Settings
+    codThreshold:   { type: Number,  default: 499  }, // subtotal threshold for COD tiers
+    codChargeBelow: { type: Number,  default: 79   }, // COD charge when subtotal < threshold
+    codChargeAbove: { type: Number,  default: 20   }, // COD charge when subtotal >= threshold
   },
   { timestamps: true }
 );

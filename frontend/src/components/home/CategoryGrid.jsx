@@ -9,7 +9,7 @@ import api from '../../services/api';
 const FALLBACK_IMAGES = {
   money:      'https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=600&auto=format&fit=crop',
   protection: 'https://images.unsplash.com/photo-1573408301185-9519f94816b5?w=600&auto=format&fit=crop',
-  love:       'https://astrostone.in/cdn/shop/files/L2_1.jpg?v=1761307086&width=810',
+  love:       'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=600&auto=format&fit=crop',
   energy:     'https://images.unsplash.com/photo-1506629082955-511b1aa562c8?w=600&auto=format&fit=crop',
 };
 

@@ -14,7 +14,7 @@ const badges = [
 const ticker = [
   '✨ Free Shipping on ₹499+',
   '🔮 100% Authentic Crystals',
-  '⭐ 4.8/5 Rating — 3,971 Reviews',
+  '⭐ 4.8/5 Rating, 3,971 Reviews',
   '🚚 Fast Delivery Across India',
   // '💳 COD Available Everywhere',
   '🎁 Gift Packaging Available',

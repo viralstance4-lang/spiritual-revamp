@@ -284,7 +284,7 @@ export default function ProductDetail() {
               {[
                 { icon: Truck,       text: 'Free Ship ₹499+' },
                 { icon: Headphones,  text: '24/7 Support' },
-                { icon: Shield,      text: 'COD Available' },
+                { icon: Shield,      text: 'Secure Payment' },
               ].map(({ icon: Icon, text }) => (
                 <div key={text} className="glass rounded-xl p-3 text-center">
                   <Icon className="w-4 h-4 text-gold-400 mx-auto mb-1" />

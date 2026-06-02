@@ -63,7 +63,7 @@ export default function ProductHighlights() {
           className="section-subtitle max-w-3xl mx-auto"
         >
           Each creation carries a deeper meaning, made to resonate with your personal path.
-          <br />Trust what draws you in — it&rsquo;s meant for you.
+          <br />Trust what draws you in, it&rsquo;s meant for you.
         </motion.p>
       </div>
 

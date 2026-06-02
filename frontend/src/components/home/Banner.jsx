@@ -11,7 +11,7 @@ const Banner = () => {
           />
           <img
             src="https://res.cloudinary.com/df9ftwtis/image/upload/v1776689259/spiritual-revamp/media/wwlf1tajydzqaxezhpdb.png"
-            alt="Spiritual Revamp — Premium Crystal Bracelets Collection"
+            alt="Spiritual Revamp: Premium Crystal Bracelets Collection"
             className="w-full h-auto object-cover"
           />
         </picture>

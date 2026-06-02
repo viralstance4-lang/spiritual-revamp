@@ -190,7 +190,7 @@ export default function OrderTracking() {
               <p className="text-sm text-white/70 leading-relaxed">
                 {order.shippingAddress?.name}<br />
                 {order.shippingAddress?.line1}{order.shippingAddress?.line2 && `, ${order.shippingAddress.line2}`}<br />
-                {order.shippingAddress?.city}, {order.shippingAddress?.state} — {order.shippingAddress?.pincode}
+                {order.shippingAddress?.city}, {order.shippingAddress?.state}, {order.shippingAddress?.pincode}
               </p>
             </div>
           </motion.div>

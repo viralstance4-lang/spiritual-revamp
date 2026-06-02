@@ -183,7 +183,7 @@ export default function Footer() {
         {/* Bottom bar */}
         <div className="mt-12 pt-6 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-xs text-white/30 text-center md:text-left">
-            © 2025 <span className="text-gold-400">Spiritual Revamp — A unit of Sukhdeyi India Enterprises Pvt. Ltd.</span> All rights reserved. Developed by {' '}
+            © 2025 <span className="text-gold-400">Spiritual Revamp, A unit of Sukhdeyi India Enterprises Pvt. Ltd.</span> All rights reserved. Developed by {' '}
             <Heart className="w-3 h-3 inline text-red-500 mx-0.5" />{' '}
             <a 
               href="https://virallstance.com" 

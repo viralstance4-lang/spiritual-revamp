@@ -92,7 +92,7 @@ export default function HeroSection() {
               className="text-white/60 text-lg md:text-xl leading-relaxed mb-10 max-w-lg"
             >
               Handcrafted crystal bracelets rooted in 5,000 years of Vedic wisdom.
-              Each stone carries a specific frequency — aligned to your deepest desires.
+              Each stone carries a specific frequency, aligned to your deepest desires.
             </motion.p>
 
             {/* CTAs */}
@@ -174,7 +174,7 @@ export default function HeroSection() {
               <p className="text-xs text-white/80 leading-snug">
                 "Got my promotion within 3 weeks!"
               </p>
-              <p className="text-[10px] text-white/40 mt-1">— Priya, Mumbai ✓</p>
+              <p className="text-[10px] text-white/40 mt-1">Priya, Mumbai ✓</p>
             </motion.div>
 
             {/* Floating card — stock alert */}

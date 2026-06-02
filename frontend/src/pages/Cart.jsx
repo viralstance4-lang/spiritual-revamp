@@ -228,9 +228,8 @@ export default function Cart() {
                 <ArrowRight className="w-4 h-4" />
               </Link>
 
-              {/* COD badge */}
               <p className="text-xs text-center text-white/40">
-               &nbsp;|&nbsp; 🔒 Secure Checkout
+               🔒 Secure Checkout
               </p>
             </div>
           </div>

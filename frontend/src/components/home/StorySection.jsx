@@ -2,10 +2,10 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 
 const steps = [
-  { step: '01', title: 'Choose Your Intention', desc: 'Pick the bracelet that resonates with what you most want to manifest — wealth, protection, love, or energy.', emoji: '🎯' },
+  { step: '01', title: 'Choose Your Intention', desc: 'Pick the bracelet that resonates with what you most want to manifest: wealth, protection, love, or energy.', emoji: '🎯' },
   { step: '02', title: 'Crystals Are Cleansed', desc: 'Every stone is cleansed under full moonlight and charged with Vedic mantras before it reaches you.', emoji: '🌕' },
   { step: '03', title: 'Set Your Affirmation', desc: 'Wear your bracelet with conscious intention. Speak your affirmation aloud. The bracelet amplifies your energy.', emoji: '🙏' },
-  { step: '04', title: 'Watch Life Transform', desc: 'Thousands have reported shifts within 21 days — new opportunities, better relationships, and renewed energy.', emoji: '✨' },
+  { step: '04', title: 'Watch Life Transform', desc: 'Thousands have reported shifts within 21 days: new opportunities, better relationships, and renewed energy.', emoji: '✨' },
 ];
 
 export default function StorySection() {
@@ -45,7 +45,7 @@ export default function StorySection() {
             >
               For centuries, healers and yogis across India have used crystals as energetic
               amplifiers. Each stone carries a unique vibrational frequency that interacts
-              with your body's energy centers — or chakras.
+              with your body's energy centers, or chakras.
             </motion.p>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
@@ -55,7 +55,7 @@ export default function StorySection() {
               className="text-white/60 leading-relaxed mb-10"
             >
               spiritual-revamp takes this ancient knowledge and combines it with modern intention-setting
-              practices. The result? Bracelets that don't just look beautiful — they work.
+              practices. The result? Bracelets that don't just look beautiful, they work.
             </motion.p>
             <motion.div
               initial={{ opacity: 0, y: 20 }}

@@ -47,7 +47,7 @@ export default function UrgencySection() {
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <Flame className="w-5 h-5 text-orange-400 animate-pulse" />
-                <span className="text-sm font-semibold text-orange-400">Flash Sale — Today Only</span>
+                <span className="text-sm font-semibold text-orange-400">Flash Sale: Today Only</span>
               </div>
 
               <h2 className="font-serif text-3xl md:text-4xl text-white font-semibold mb-3 leading-tight">

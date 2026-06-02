@@ -5,8 +5,8 @@ const messages = [
   'A unit of Sukhdeyi India Enterprises Pvt. Ltd.',
   '✨ Free Shipping on orders above ₹499',
   '🎁 Use code WELCOME10 for 10% off your first order',
-  '⭐ 50,000+ Happy Customers | COD Available',
-  '🔮 Handcrafted with Real Crystals — Certified Authentic',
+  '⭐ 50,000+ Happy Customers',
+  '🔮 Handcrafted with Real Crystals, Certified Authentic',
 ];
 
 export default function AnnouncementBar() {

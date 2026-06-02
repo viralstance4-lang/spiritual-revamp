@@ -9,7 +9,7 @@ import InstagramFeed from '../components/home/InstagramFeed';
 
 export default function Home() {
   useEffect(() => {
-    document.title = 'Spiritual Revamp — Premium Crystal Bracelets | Money, Protection, Love, Energy';
+    document.title = 'Spiritual Revamp: Premium Crystal Bracelets | Money, Protection, Love, Energy';
   }, []);
 
   return (

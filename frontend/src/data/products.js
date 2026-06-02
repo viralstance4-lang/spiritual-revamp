@@ -14,7 +14,7 @@ export const PRODUCTS = [
       { url: 'https://images.unsplash.com/photo-1573408301185-9519f94816b5?w=800&auto=format&fit=crop', alt: 'Golden Abundance Bracelet Detail' },
     ],
     benefits: [
-      { title: 'Attract Unexpected Wealth', description: "Citrine is known as the \"merchant's stone\" — it opens channels for money to flow from unexpected sources.", icon: '💰' },
+      { title: 'Attract Unexpected Wealth', description: "Citrine is known as the \"merchant's stone\". It opens channels for money to flow from unexpected sources.", icon: '💰' },
       { title: 'Destroy Scarcity Mindset', description: "Pyrite's golden energy burns through deep-rooted beliefs of lack and limitation.", icon: '🔥' },
       { title: 'Luck On Your Side', description: 'Green Aventurine, the luckiest crystal, tips the universe\'s favor toward you.', icon: '🍀' },
     ],
@@ -99,7 +99,7 @@ export const PRODUCTS = [
     ],
     benefits: [
       { title: 'Laser Focus & Clarity', description: "Tiger's Eye cuts through confusion and gives you mental clarity.", icon: '🐯' },
-      { title: 'Ignite Passion & Drive', description: 'Carnelian rekindles your inner fire — you\'ll feel energized every morning.', icon: '🔥' },
+      { title: 'Ignite Passion & Drive', description: 'Carnelian rekindles your inner fire. You\'ll feel energized every morning.', icon: '🔥' },
       { title: 'Root Chakra Power', description: 'Red Jasper grounds your energy and builds stamina.', icon: '❤️' },
     ],
     ingredients: ["Tiger's Eye", 'Carnelian', 'Red Jasper', 'Black Onyx'],
@@ -119,8 +119,8 @@ export const TESTIMONIALS = [
   { name: 'Priya M.', city: 'Mumbai', rating: 5, text: 'I ordered the Golden Abundance bracelet skeptically. Within 3 weeks, I got a promotion I\'d been waiting 2 years for. Coincidence? Maybe. But I\'m not taking it off.', product: 'Golden Abundance Bracelet', verified: true },
   { name: 'Rahul S.', city: 'Delhi', rating: 5, text: 'The Black Shield bracelet completely changed my energy. I used to feel drained after office. Now I come home with energy to spare. My wife noticed the difference immediately.', product: 'Black Shield Bracelet', verified: true },
   { name: 'Anjali K.', city: 'Bangalore', rating: 5, text: 'Got the Rose Love bracelet after a terrible breakup. 6 months later I\'m in the healthiest relationship of my life. The bracelet reminded me to love myself first.', product: 'Rose Love Bracelet', verified: true },
-  { name: 'Vikram P.', city: 'Pune', rating: 5, text: 'Tiger Energy bracelet — I wake up at 5am now without an alarm. My gym performance improved, my focus at work is laser sharp. This thing is real.', product: 'Tiger Energy Bracelet', verified: true },
-  { name: 'Sneha R.', city: 'Chennai', rating: 5, text: 'The packaging alone is premium. The bracelet quality is unmatched. But most importantly — I feel different wearing it. More aligned, more intentional.', product: 'Golden Abundance Bracelet', verified: true },
+  { name: 'Vikram P.', city: 'Pune', rating: 5, text: 'Tiger Energy bracelet. I wake up at 5am now without an alarm. My gym performance improved, my focus at work is laser sharp. This thing is real.', product: 'Tiger Energy Bracelet', verified: true },
+  { name: 'Sneha R.', city: 'Chennai', rating: 5, text: 'The packaging alone is premium. The bracelet quality is unmatched. But most importantly, I feel different wearing it. More aligned, more intentional.', product: 'Golden Abundance Bracelet', verified: true },
   { name: 'Arjun T.', city: 'Hyderabad', rating: 4, text: 'Ordered 3 bracelets for myself and gifted one to my mother. All of us are obsessed. The affirmation cards that came with it are beautiful.', product: 'Black Shield Bracelet', verified: true },
 ];
 

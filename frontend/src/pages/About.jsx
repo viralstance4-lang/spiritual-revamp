@@ -5,7 +5,7 @@ import { ArrowRight } from 'lucide-react';
 const values = [
   { emoji: '🌿', title: 'Ethically Sourced', desc: 'Every crystal is sourced directly from certified mines in India, Brazil and Madagascar. No middlemen. No exploitation.' },
   { emoji: '🌙', title: 'Moon Charged', desc: 'Before dispatch, every bracelet is placed under full moonlight for 12 hours to amplify its natural energy.' },
-  { emoji: '🙏', title: 'Vedic Intent', desc: 'Each bracelet is blessed with Vedic mantras specific to its intention — chanted by our in-house practitioner.' },
+  { emoji: '🙏', title: 'Vedic Intent', desc: 'Each bracelet is blessed with Vedic mantras specific to its intention, chanted by our in-house practitioner.' },
   { emoji: '💎', title: 'Premium Quality', desc: 'We use AAA-grade crystals, 925 silver clasps, and durable elastic cord. Built to last a lifetime.' },
 ];
 
@@ -57,7 +57,7 @@ export default function About() {
           <div className="glass rounded-3xl p-8 md:p-12 space-y-6 text-white/70 text-lg leading-relaxed">
             <p>
               In 2019, life felt louder than ever. People were surrounded by stress, negativity, constant
-              pressure, and a feeling of being disconnected — not just from peace, but from themselves.
+              pressure, and a feeling of being disconnected, not just from peace, but from themselves.
             </p>
             <p className="text-white font-medium">
               That was the beginning of Spiritual Revamp.
@@ -81,7 +81,7 @@ export default function About() {
               And something beautiful happened.
             </p>
             <p>
-              People didn't just wear them — they connected with them. They began sharing stories of positivity,
+              People didn't just wear them, they connected with them. They began sharing stories of positivity,
               clarity, emotional strength, better focus, and a renewed sense of belief in themselves.
             </p>
             <p className="text-white font-medium">
@@ -89,7 +89,7 @@ export default function About() {
             </p>
             <p>
               Today, Spiritual Revamp is more than a spiritual brand. It is a space for people who want to
-              invite better energy into their lives — through carefully selected crystals, intention-based
+              invite better energy into their lives, through carefully selected crystals, intention-based
               bracelets, spiritual tools, and meaningful products designed to support everyday life.
             </p>
             <p>

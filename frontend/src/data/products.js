@@ -116,12 +116,12 @@ export const PRODUCTS = [
 ];
 
 export const TESTIMONIALS = [
-  { name: 'Priya M.', city: 'Mumbai', rating: 5, text: 'I ordered the Golden Abundance bracelet skeptically. Within 3 weeks, I got a promotion I\'d been waiting 2 years for. Coincidence? Maybe. But I\'m not taking it off.', product: 'Golden Abundance Bracelet', verified: true },
-  { name: 'Rahul S.', city: 'Delhi', rating: 5, text: 'The Black Shield bracelet completely changed my energy. I used to feel drained after office. Now I come home with energy to spare. My wife noticed the difference immediately.', product: 'Black Shield Bracelet', verified: true },
-  { name: 'Anjali K.', city: 'Bangalore', rating: 5, text: 'Got the Rose Love bracelet after a terrible breakup. 6 months later I\'m in the healthiest relationship of my life. The bracelet reminded me to love myself first.', product: 'Rose Love Bracelet', verified: true },
-  { name: 'Vikram P.', city: 'Pune', rating: 5, text: 'Tiger Energy bracelet. I wake up at 5am now without an alarm. My gym performance improved, my focus at work is laser sharp. This thing is real.', product: 'Tiger Energy Bracelet', verified: true },
-  { name: 'Sneha R.', city: 'Chennai', rating: 5, text: 'The packaging alone is premium. The bracelet quality is unmatched. But most importantly, I feel different wearing it. More aligned, more intentional.', product: 'Golden Abundance Bracelet', verified: true },
-  { name: 'Arjun T.', city: 'Hyderabad', rating: 4, text: 'Ordered 3 bracelets for myself and gifted one to my mother. All of us are obsessed. The affirmation cards that came with it are beautiful.', product: 'Black Shield Bracelet', verified: true },
+  { name: 'Priya M.', city: 'Mumbai', rating: 5, text: 'Maine Rudraksha Chain Pendant pehna aur pehle hi din se ek alag hi shanti mehsoos ki. Office mein promotion mila, ghar mein sukoon aaya. Baba ka ashirvaad laga isme.', product: 'Rudraksha Chain Pendant', verified: true },
+  { name: 'Rahul S.', city: 'Delhi', rating: 5, text: 'Panch Mukhi Rudraksha Mala se meri subah ki pooja bilkul badal gayi. 54 beads ka count perfect hai jap ke liye. Quality ekdum asli hai, koi doubt nahi. Highly recommended.', product: 'Panch Mukhi Rudraksha Mala (54 Beads)', verified: true },
+  { name: 'Anjali K.', city: 'Varanasi', rating: 5, text: 'Pure Authentic Laal Chandan ki fragrance hi bata deti hai ki ye asli hai. Tilak lagao ya puja mein use karo, ek alag hi pavitrata ka ahsaas hota hai. Bahut zyada khush hoon is purchase se.', product: 'Pure Authentic Laal Chandan', verified: true },
+  { name: 'Vikram P.', city: 'Pune', rating: 5, text: 'Evil Eye Bracelet meri behen ko gift kiya tha. Wo kehti hai jab se ye pehna hai, nazar wali takleefein bilkul band ho gayi hain. Design bhi bahut sundar hai, log poochte rehte hain.', product: 'Evil Eye Bracelet', verified: true },
+  { name: 'Sneha R.', city: 'Chennai', rating: 5, text: 'Dhan Yog Bracelet order karne ke baad se business mein ek acha shift feel ho raha hai. Packaging premium thi, quality ekdum top. Ek vishwas hota hai ise pehenne mein jo confidence deta hai.', product: 'Dhan Yog Bracelet', verified: true },
+  { name: 'Arjun T.', city: 'Hyderabad', rating: 4, text: 'Tiny Evil Eye Bracelet apni beti ke liye liya — bilkul perfect size hai bachon ke liye. Nazar se bachane ke liye best gift. 3 aur order karne wala hoon relatives ke liye.', product: 'Tiny Evil Eye Bracelet', verified: true },
 ];
 
 export const CATEGORY_INFO = {

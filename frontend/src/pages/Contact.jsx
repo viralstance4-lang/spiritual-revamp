@@ -85,7 +85,7 @@ export default function Contact() {
 
             {/* WhatsApp CTA */}
             <a
-              href="https://wa.me/919876543210?text=Hi!%20I%20have%20a%20question%20about%20Spiritual%20Revamp"
+              href="https://wa.me/917599214642?text=Hi!%20I%20have%20a%20question%20about%20Spiritual%20Revamp"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-3 bg-green-500/10 border border-green-500/20 rounded-2xl p-5 hover:border-green-500/40 transition-colors"

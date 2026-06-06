@@ -20,7 +20,7 @@ export default function Home() {
       <ProductHighlights />
       <StorySection />
       <Testimonials />
-      <InstagramFeed />
+      {/* <InstagramFeed /> */}
     </>
   );
 }

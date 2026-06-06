@@ -15,7 +15,6 @@ const footerLinks = {
   help: [
     { label: 'About Us',    to: '/about' },
     { label: 'Contact',     to: '/contact' },
-    { label: 'Track Order', to: '/track-order' },
   ],
 };
 

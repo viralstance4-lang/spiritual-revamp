@@ -36,7 +36,7 @@ export default function Login() {
       >
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="w-14 h-14 rounded-2xl bg-gold-500 flex items-center justify-center text-black font-bold text-xl mx-auto mb-4">SS</div>
+          <div className="w-14 h-14 rounded-2xl bg-gold-500 flex items-center justify-center text-black font-bold text-xl mx-auto mb-4">SR</div>
           <h1 className="text-xl font-semibold text-white">spiritual-revamp Admin</h1>
           <p className="text-white/40 text-sm mt-1">Sign in to manage your store</p>
         </div>

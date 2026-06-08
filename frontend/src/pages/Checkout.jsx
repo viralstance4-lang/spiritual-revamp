@@ -15,7 +15,7 @@ const INDIAN_STATES = [
 ];
 
 export default function Checkout() {
-  const { items, subtotal, discount, coupon, clearCart, shippingSettings } = useCart();
+  const { items, subtotal, discount, coupon, gift, clearCart, shippingSettings } = useCart();
   const navigate = useNavigate();
   const [step, setStep] = useState(1); // 1=address, 2=payment
   const [loading, setLoading] = useState(false);
@@ -333,6 +333,18 @@ export default function Checkout() {
                     </p>
                   </div>
                 ))}
+                {gift && (
+                  <div className="flex gap-3 items-center">
+                    <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 border border-gold-400/30">
+                      <img src={gift.image} alt={gift.name} className="w-full h-full object-cover" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-white truncate">{gift.name}</p>
+                      <p className="text-xs text-gold-400">🎁 Free Gift · Qty: 1</p>
+                    </div>
+                    <p className="text-sm font-semibold text-green-400 flex-shrink-0">FREE</p>
+                  </div>
+                )}
               </div>
               <div className="h-px bg-white/10 my-4" />
               <div className="space-y-2 text-sm">

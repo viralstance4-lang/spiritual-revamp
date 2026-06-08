@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Download, Search, RefreshCw, X, User, Phone, Mail, MapPin,
   Package, CreditCard, Truck, Clock, ChevronRight, Loader2,
-  CheckCircle, XCircle, AlertCircle, Trash2,
+  CheckCircle, XCircle, AlertCircle, Trash2, Gift,
 } from 'lucide-react';
 import api from '../services/api';
 import toast from 'react-hot-toast';
@@ -252,8 +252,8 @@ function OrderDetailDrawer({ orderId, onClose, onStatusUpdated, onDeleted }) {
                 </h3>
                 <div className="divide-y divide-white/5">
                   {order.items.map((item, i) => (
-                    <div key={i} className="flex items-center gap-3 py-2.5 first:pt-0 last:pb-0">
-                      <div className="w-12 h-12 rounded-xl overflow-hidden bg-white/5 flex-shrink-0 border border-white/10">
+                    <div key={i} className={`flex items-center gap-3 py-2.5 first:pt-0 last:pb-0 ${item.isFreeGift ? 'bg-gold-400/5 -mx-1 px-1 rounded-lg' : ''}`}>
+                      <div className={`w-12 h-12 rounded-xl overflow-hidden bg-white/5 flex-shrink-0 border ${item.isFreeGift ? 'border-gold-400/30' : 'border-white/10'}`}>
                         {item.image || item.product?.images?.[0]?.url ? (
                           <img
                             src={item.image || item.product?.images?.[0]?.url}
@@ -267,14 +267,30 @@ function OrderDetailDrawer({ orderId, onClose, onStatusUpdated, onDeleted }) {
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-white truncate">{item.name}</p>
+                        <p className="text-sm font-medium text-white truncate flex items-center gap-1.5">
+                          {item.name}
+                          {item.isFreeGift && (
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide rounded-full bg-gold-400/15 text-gold-400 flex-shrink-0">
+                              <Gift className="w-2.5 h-2.5" /> Free Gift
+                            </span>
+                          )}
+                        </p>
                         <p className="text-xs text-white/40">Qty: {item.quantity}</p>
                       </div>
                       <div className="text-right flex-shrink-0">
-                        <p className="text-sm font-semibold text-white">
-                          ₹{(item.price * item.quantity).toLocaleString('en-IN')}
-                        </p>
-                        <p className="text-[10px] text-white/30">₹{item.price} each</p>
+                        {item.isFreeGift ? (
+                          <>
+                            <p className="text-sm font-semibold text-green-400">FREE</p>
+                            <p className="text-[10px] text-white/30 line-through">₹{item.originalPrice}</p>
+                          </>
+                        ) : (
+                          <>
+                            <p className="text-sm font-semibold text-white">
+                              ₹{(item.price * item.quantity).toLocaleString('en-IN')}
+                            </p>
+                            <p className="text-[10px] text-white/30">₹{item.price} each</p>
+                          </>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -298,6 +314,18 @@ function OrderDetailDrawer({ orderId, onClose, onStatusUpdated, onDeleted }) {
                       label={`Discount${order.couponCode ? ` (${order.couponCode})` : ''}`}
                       value={`-₹${order.discount?.toLocaleString('en-IN')}`}
                       valueClass="text-green-400"
+                    />
+                  )}
+                  {order.items.some(i => i.isFreeGift) && (
+                    <PriceRow
+                      label={
+                        <span className="flex items-center gap-1.5">
+                          <Gift className="w-3.5 h-3.5 text-gold-400" />
+                          Free Gift{order.couponCode ? ` (${order.couponCode})` : ''}
+                        </span>
+                      }
+                      value="Included"
+                      valueClass="text-gold-400"
                     />
                   )}
                   <div className="border-t border-white/10 pt-2 mt-1">

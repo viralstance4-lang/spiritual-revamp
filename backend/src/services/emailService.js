@@ -26,9 +26,16 @@ const sendOrderConfirmationEmail = async (order, email) => {
 
   const itemsHtml = order.items.map(item => `
     <tr>
-      <td style="padding:8px;border-bottom:1px solid #2a2a2a;">${item.name}</td>
+      <td style="padding:8px;border-bottom:1px solid #2a2a2a;">
+        ${item.name}
+        ${item.isFreeGift ? '<span style="display:inline-block;margin-left:6px;padding:2px 8px;font-size:10px;font-weight:bold;text-transform:uppercase;letter-spacing:0.5px;color:#0a0a0a;background:#D4AF37;border-radius:999px;">🎁 Free Gift</span>' : ''}
+      </td>
       <td style="padding:8px;border-bottom:1px solid #2a2a2a;text-align:center;">${item.quantity}</td>
-      <td style="padding:8px;border-bottom:1px solid #2a2a2a;text-align:right;">₹${(item.price * item.quantity).toLocaleString('en-IN')}</td>
+      <td style="padding:8px;border-bottom:1px solid #2a2a2a;text-align:right;">
+        ${item.isFreeGift
+          ? `<span style="color:rgba(255,255,255,0.3);text-decoration:line-through;margin-right:6px;">₹${(item.originalPrice || 0).toLocaleString('en-IN')}</span><span style="color:#4ade80;">FREE</span>`
+          : `₹${(item.price * item.quantity).toLocaleString('en-IN')}`}
+      </td>
     </tr>
   `).join('');
 

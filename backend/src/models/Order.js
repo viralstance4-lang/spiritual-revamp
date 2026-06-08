@@ -10,6 +10,8 @@ const orderItemSchema = new mongoose.Schema({
   image: String,
   price: Number,
   quantity: { type: Number, default: 1 },
+  isFreeGift: { type: Boolean, default: false },
+  originalPrice: Number,
 });
 
 const orderSchema = new mongoose.Schema({
@@ -41,6 +43,8 @@ const orderSchema = new mongoose.Schema({
   shippingCharge: { type: Number, default: 0 },
   discount: { type: Number, default: 0 },
   couponCode: String,
+  couponType: { type: String, enum: ['percentage', 'fixed', 'free_gift'] },
+  couponApplicationMode: { type: String, enum: ['auto', 'manual'] },
   total: { type: Number, required: true },
   paymentMethod: {
     type: String,

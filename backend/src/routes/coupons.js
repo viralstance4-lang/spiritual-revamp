@@ -3,14 +3,16 @@ const router = express.Router();
 const { protect, adminOnly } = require('../middleware/auth');
 const {
   validateCoupon,
+  getAutoApplyCoupon,
   getAllCoupons,
   createCoupon,
   updateCoupon,
   deleteCoupon,
 } = require('../controllers/couponController');
 
-// Public — frontend cart uses this
+// Public — frontend cart uses these
 router.post('/validate', validateCoupon);
+router.post('/auto-apply', getAutoApplyCoupon);
 
 // Admin CRUD
 router.get('/',    protect, adminOnly, getAllCoupons);

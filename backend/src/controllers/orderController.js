@@ -64,7 +64,19 @@ exports.createOrder = async (req, res) => {
   const shippingCharge = await calculateShipping(subtotal, paymentMethod);
 
   // Dynamic coupon from DB (increments usedCount on success)
-  const discount = await applyCouponToOrder(couponCode, subtotal);
+  const { discount, giftProduct, couponType, applicationMode } = await applyCouponToOrder(couponCode, subtotal);
+
+  if (giftProduct) {
+    orderItems.push({
+      product: giftProduct._id,
+      name: giftProduct.name,
+      image: giftProduct.images?.[0]?.url,
+      price: 0,
+      quantity: 1,
+      isFreeGift: true,
+      originalPrice: giftProduct.price,
+    });
+  }
 
   const total = subtotal + shippingCharge - discount;
 
@@ -76,6 +88,8 @@ exports.createOrder = async (req, res) => {
     shippingCharge,
     discount,
     couponCode,
+    couponType:            couponType || undefined,
+    couponApplicationMode: applicationMode || undefined,
     total,
     isGift,
     giftMessage,
@@ -110,10 +124,12 @@ exports.createOrder = async (req, res) => {
     }
   }
 
-  // Decrement stock
+  // Decrement stock (free gifts reduce stock but don't count as "sold")
   for (const item of orderItems) {
     await Product.findByIdAndUpdate(item.product, {
-      $inc: { stock: -item.quantity, sold: item.quantity },
+      $inc: item.isFreeGift
+        ? { stock: -item.quantity }
+        : { stock: -item.quantity, sold: item.quantity },
     });
   }
 

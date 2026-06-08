@@ -8,7 +8,12 @@ exports.getAllProducts = async (req, res) => {
   if (category) query.category = category;
   if (featured === 'true') query.isFeatured = true;
   if (bestseller === 'true') query.isBestseller = true;
-  if (search) query.$text = { $search: search };
+  if (search) {
+    // Case-insensitive partial match on name/description.
+    // (MongoDB $text only matches whole stemmed words, so "soul" wouldn't match "Soulmate".)
+    const re = new RegExp(search.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+    query.$or = [{ name: re }, { description: re }];
+  }
 
   const sortMap = {
     price_asc: { price: 1 },

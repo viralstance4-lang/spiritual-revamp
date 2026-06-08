@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Plus, Edit2, Trash2, X, Tag, Loader2,
-  CheckCircle, XCircle, Calendar, Users, Percent, DollarSign,
+  CheckCircle, XCircle, Calendar, Users, Percent, DollarSign, Gift, Search, Zap, MousePointerClick,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../services/api';
@@ -20,8 +20,96 @@ function isExpired(expiresAt) {
 const EMPTY_FORM = {
   code: '', description: '', discountType: 'percentage', discountValue: '',
   minOrderValue: '', maxDiscountAmount: '', isActive: true,
-  usageLimit: '', expiresAt: '',
+  usageLimit: '', expiresAt: '', giftProduct: '', applicationMode: 'manual',
 };
+
+// ─── Gift product picker (search existing products) ───────────────────────────
+function GiftProductPicker({ value, initialProduct, onChange }) {
+  const [query, setQuery]         = useState('');
+  const [results, setResults]     = useState([]);
+  const [searching, setSearching] = useState(false);
+  const [selected, setSelected]   = useState(initialProduct || null);
+  const [open, setOpen]           = useState(false);
+
+  useEffect(() => {
+    if (!query.trim()) { setResults([]); return; }
+    setSearching(true);
+    const t = setTimeout(() => {
+      api.get(`/products?search=${encodeURIComponent(query.trim())}&limit=8`)
+        .then(res => setResults(res.data.products || []))
+        .catch(() => setResults([]))
+        .finally(() => setSearching(false));
+    }, 300);
+    return () => clearTimeout(t);
+  }, [query]);
+
+  const pick = (product) => {
+    setSelected(product);
+    setOpen(false);
+    setQuery('');
+    onChange(product._id);
+  };
+
+  const inp = 'w-full bg-dark-400 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-white/20 focus:outline-none focus:border-gold-500/50 transition-colors';
+
+  return (
+    <div className="relative">
+      {selected ? (
+        <div className="flex items-center justify-between gap-3 px-3 py-2.5 bg-dark-400 border border-white/10 rounded-xl">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-9 h-9 rounded-lg overflow-hidden border border-white/10 flex-shrink-0">
+              <img src={selected.images?.[0]?.url} alt={selected.name} className="w-full h-full object-cover" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm text-white truncate">{selected.name}</p>
+              <p className="text-xs text-white/40">
+                {fmt.inr(selected.price)} · Stock: {selected.stock ?? '—'}
+              </p>
+            </div>
+          </div>
+          <button type="button" onClick={() => { setSelected(null); onChange(''); }}
+            className="text-xs text-white/30 hover:text-red-400 transition-colors flex-shrink-0">
+            Change
+          </button>
+        </div>
+      ) : (
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+          <input
+            value={query}
+            onChange={e => { setQuery(e.target.value); setOpen(true); }}
+            onFocus={() => setOpen(true)}
+            placeholder="Search products by name…"
+            className={`${inp} pl-9`}
+          />
+          {open && query.trim() && (
+            <div className="absolute z-10 mt-1 w-full max-h-64 overflow-y-auto bg-dark-50 border border-white/10 rounded-xl shadow-xl">
+              {searching ? (
+                <div className="px-3 py-3 text-xs text-white/40 flex items-center gap-2">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" /> Searching…
+                </div>
+              ) : results.length === 0 ? (
+                <p className="px-3 py-3 text-xs text-white/40">No products found</p>
+              ) : results.map(p => (
+                <button type="button" key={p._id} onClick={() => pick(p)}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-white/5 transition-colors text-left">
+                  <div className="w-8 h-8 rounded-lg overflow-hidden border border-white/10 flex-shrink-0">
+                    <img src={p.images?.[0]?.url} alt={p.name} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm text-white truncate">{p.name}</p>
+                    <p className="text-xs text-white/40">{fmt.inr(p.price)} · Stock: {p.stock ?? '—'}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+      {!value && <p className="text-xs text-red-400/70 mt-1.5">Select a product to give as a free gift</p>}
+    </div>
+  );
+}
 
 // ─── Coupon Modal (Create / Edit) ──────────────────────────────────────────────
 function CouponModal({ coupon, onClose, onSaved }) {
@@ -35,8 +123,11 @@ function CouponModal({ coupon, onClose, onSaved }) {
     isActive:          coupon.isActive,
     usageLimit:        String(coupon.usageLimit || ''),
     expiresAt:         coupon.expiresAt ? coupon.expiresAt.slice(0, 10) : '',
+    giftProduct:       coupon.giftProduct?._id || coupon.giftProduct || '',
+    applicationMode:   coupon.applicationMode || 'manual',
   } : EMPTY_FORM);
   const [saving, setSaving] = useState(false);
+  const isFreeGift = form.discountType === 'free_gift';
 
   const set = (k) => (e) => {
     const v = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
@@ -46,10 +137,18 @@ function CouponModal({ coupon, onClose, onSaved }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.code.trim())       { toast.error('Coupon code is required'); return; }
-    if (!form.discountValue)     { toast.error('Discount value is required'); return; }
-    if (Number(form.discountValue) <= 0) { toast.error('Discount value must be > 0'); return; }
-    if (form.discountType === 'percentage' && Number(form.discountValue) > 100) {
-      toast.error('Percentage cannot exceed 100'); return;
+
+    if (isFreeGift) {
+      if (!form.giftProduct)            { toast.error('Please select a free gift product'); return; }
+      if (!form.minOrderValue || Number(form.minOrderValue) <= 0) {
+        toast.error('Minimum order amount is required for a free-gift coupon'); return;
+      }
+    } else {
+      if (!form.discountValue)     { toast.error('Discount value is required'); return; }
+      if (Number(form.discountValue) <= 0) { toast.error('Discount value must be > 0'); return; }
+      if (form.discountType === 'percentage' && Number(form.discountValue) > 100) {
+        toast.error('Percentage cannot exceed 100'); return;
+      }
     }
 
     setSaving(true);
@@ -57,12 +156,14 @@ function CouponModal({ coupon, onClose, onSaved }) {
       code:              form.code.toUpperCase().trim(),
       description:       form.description,
       discountType:      form.discountType,
-      discountValue:     Number(form.discountValue),
+      discountValue:     isFreeGift ? 0 : Number(form.discountValue),
+      giftProduct:       isFreeGift ? form.giftProduct : undefined,
       minOrderValue:     Number(form.minOrderValue)     || 0,
       maxDiscountAmount: Number(form.maxDiscountAmount) || 0,
       isActive:          form.isActive,
       usageLimit:        Number(form.usageLimit)        || 0,
       expiresAt:         form.expiresAt || null,
+      applicationMode:   form.applicationMode,
     };
 
     try {
@@ -123,28 +224,88 @@ function CouponModal({ coupon, onClose, onSaved }) {
               <select value={form.discountType} onChange={set('discountType')} className={inp}>
                 <option value="percentage">Percentage (%)</option>
                 <option value="fixed">Fixed Amount (₹)</option>
+                <option value="free_gift">Free Gift</option>
               </select>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-white/60 mb-1.5">
-                Discount Value <span className="text-red-400">*</span>
-              </label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-white/40">
-                  {form.discountType === 'percentage' ? '%' : '₹'}
-                </span>
-                <input type="number" min="0" value={form.discountValue} onChange={set('discountValue')}
-                  placeholder={form.discountType === 'percentage' ? '10' : '100'} className={`${inp} pl-7`} />
+            {!isFreeGift && (
+              <div>
+                <label className="block text-sm font-medium text-white/60 mb-1.5">
+                  Discount Value <span className="text-red-400">*</span>
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-white/40">
+                    {form.discountType === 'percentage' ? '%' : '₹'}
+                  </span>
+                  <input type="number" min="0" value={form.discountValue} onChange={set('discountValue')}
+                    placeholder={form.discountType === 'percentage' ? '10' : '100'} className={`${inp} pl-7`} />
+                </div>
               </div>
+            )}
+          </div>
+
+          {/* Application mode */}
+          <div>
+            <label className="block text-sm font-medium text-white/60 mb-1.5">
+              Coupon Application Mode <span className="text-red-400">*</span>
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              <label className={`flex items-start gap-2.5 p-3 rounded-xl border cursor-pointer transition-colors
+                ${form.applicationMode === 'auto'
+                  ? 'border-gold-500/50 bg-gold-500/10'
+                  : 'border-white/10 hover:border-white/20'}`}>
+                <input type="radio" name="applicationMode" value="auto"
+                  checked={form.applicationMode === 'auto'} onChange={set('applicationMode')}
+                  className="accent-yellow-500 w-4 h-4 mt-0.5" />
+                <span>
+                  <span className="flex items-center gap-1.5 text-sm font-semibold text-white">
+                    <Zap className="w-3.5 h-3.5 text-gold-400" /> Auto Apply
+                  </span>
+                  <span className="block text-xs text-white/30 mt-0.5">Applied automatically once the cart qualifies</span>
+                </span>
+              </label>
+              <label className={`flex items-start gap-2.5 p-3 rounded-xl border cursor-pointer transition-colors
+                ${form.applicationMode === 'manual'
+                  ? 'border-gold-500/50 bg-gold-500/10'
+                  : 'border-white/10 hover:border-white/20'}`}>
+                <input type="radio" name="applicationMode" value="manual"
+                  checked={form.applicationMode === 'manual'} onChange={set('applicationMode')}
+                  className="accent-yellow-500 w-4 h-4 mt-0.5" />
+                <span>
+                  <span className="flex items-center gap-1.5 text-sm font-semibold text-white">
+                    <MousePointerClick className="w-3.5 h-3.5 text-blue-400" /> Manual Apply
+                  </span>
+                  <span className="block text-xs text-white/30 mt-0.5">Customer must enter the coupon code</span>
+                </span>
+              </label>
             </div>
           </div>
+
+          {/* Free gift product picker */}
+          {isFreeGift && (
+            <div>
+              <label className="flex items-center gap-1.5 text-sm font-medium text-white/60 mb-1.5">
+                <Gift className="w-3.5 h-3.5 text-gold-400" />
+                Gift Product <span className="text-red-400">*</span>
+              </label>
+              <GiftProductPicker
+                value={form.giftProduct}
+                initialProduct={coupon?.giftProduct && typeof coupon.giftProduct === 'object' ? coupon.giftProduct : null}
+                onChange={(id) => setForm(f => ({ ...f, giftProduct: id }))}
+              />
+            </div>
+          )}
 
           {/* Rules */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-white/60 mb-1.5">Min Order Value (₹)</label>
+              <label className="block text-sm font-medium text-white/60 mb-1.5">
+                Min Order Value (₹) {isFreeGift && <span className="text-red-400">*</span>}
+              </label>
               <input type="number" min="0" value={form.minOrderValue} onChange={set('minOrderValue')}
-                placeholder="0 = no minimum" className={inp} />
+                placeholder={isFreeGift ? 'e.g. 999' : '0 = no minimum'} className={inp} />
+              {isFreeGift && (
+                <p className="text-xs text-white/30 mt-1">Customers spending this much get the gift free</p>
+              )}
             </div>
             {form.discountType === 'percentage' && (
               <div>
@@ -219,6 +380,15 @@ function CouponRow({ coupon, onEdit, onDelete, onToggle }) {
         <div className="flex items-center gap-2">
           <Tag className="w-3.5 h-3.5 text-gold-400 flex-shrink-0" />
           <span className="font-mono text-sm font-semibold text-white">{coupon.code}</span>
+          {coupon.applicationMode === 'auto' ? (
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide bg-gold-400/15 text-gold-400">
+              <Zap className="w-2.5 h-2.5" /> Auto
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide bg-blue-400/15 text-blue-300">
+              <MousePointerClick className="w-2.5 h-2.5" /> Manual
+            </span>
+          )}
         </div>
         {coupon.description && (
           <p className="text-xs text-white/30 mt-0.5 ml-5.5">{coupon.description}</p>
@@ -228,11 +398,15 @@ function CouponRow({ coupon, onEdit, onDelete, onToggle }) {
       {/* Discount */}
       <td className="px-4 py-3">
         <div className="flex items-center gap-1.5">
-          {coupon.discountType === 'percentage'
+          {coupon.discountType === 'free_gift'
+            ? <Gift className="w-3.5 h-3.5 text-gold-400" />
+            : coupon.discountType === 'percentage'
             ? <Percent className="w-3.5 h-3.5 text-blue-400" />
             : <DollarSign className="w-3.5 h-3.5 text-green-400" />}
           <span className="text-sm font-semibold text-white">
-            {coupon.discountType === 'percentage'
+            {coupon.discountType === 'free_gift'
+              ? (coupon.giftProduct?.name || 'Free Gift')
+              : coupon.discountType === 'percentage'
               ? `${coupon.discountValue}%`
               : fmt.inr(coupon.discountValue)}
           </span>
@@ -344,8 +518,12 @@ export default function Coupons() {
   const onSaved = () => { setModal(null); fetchCoupons(); };
 
   // Stats
-  const activeCount  = coupons.filter(c => c.isActive && !isExpired(c.expiresAt)).length;
-  const totalUsed    = coupons.reduce((s, c) => s + c.usedCount, 0);
+  const activeCount     = coupons.filter(c => c.isActive && !isExpired(c.expiresAt)).length;
+  const totalUsed       = coupons.reduce((s, c) => s + c.usedCount, 0);
+  const giftCoupons     = coupons.filter(c => c.discountType === 'free_gift');
+  const giftsDistributed = giftCoupons.reduce((s, c) => s + c.usedCount, 0);
+  const autoUses        = coupons.filter(c => c.applicationMode === 'auto').reduce((s, c) => s + c.usedCount, 0);
+  const manualUses      = coupons.filter(c => c.applicationMode !== 'auto').reduce((s, c) => s + c.usedCount, 0);
 
   return (
     <div className="space-y-6">
@@ -355,6 +533,8 @@ export default function Coupons() {
           <h1 className="text-2xl font-bold text-white">Coupons</h1>
           <p className="text-sm text-white/40 mt-0.5">
             {coupons.length} total · {activeCount} active · {totalUsed} total uses
+            {' '}(<Zap className="inline w-3 h-3 text-gold-400 -mt-0.5" /> {autoUses} auto · <MousePointerClick className="inline w-3 h-3 text-blue-300 -mt-0.5" /> {manualUses} manual)
+            {giftCoupons.length > 0 && <> · <Gift className="inline w-3.5 h-3.5 text-gold-400 -mt-0.5" /> {giftsDistributed} gifts distributed</>}
           </p>
         </div>
         <button onClick={() => setModal({ type: 'add' })}

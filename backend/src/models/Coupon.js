@@ -12,8 +12,16 @@ const couponSchema = new mongoose.Schema(
     description: { type: String, default: '' },
 
     // ── Discount ──────────────────────────────────────────────────────────────
-    discountType:  { type: String, enum: ['percentage', 'fixed'], required: true },
-    discountValue: { type: Number, required: true, min: 0 },
+    discountType:  { type: String, enum: ['percentage', 'fixed', 'free_gift'], required: true },
+    discountValue: { type: Number, required: true, min: 0, default: 0 },
+
+    // ── Free gift (only used when discountType === 'free_gift') ──────────────
+    giftProduct: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
+
+    // ── Application mode ──────────────────────────────────────────────────────
+    // 'auto'   — applied automatically once the cart qualifies (no code entry)
+    // 'manual' — customer must enter the coupon code
+    applicationMode: { type: String, enum: ['auto', 'manual'], default: 'manual' },
 
     // ── Rules ─────────────────────────────────────────────────────────────────
     minOrderValue:     { type: Number, default: 0 },   // minimum cart subtotal to apply

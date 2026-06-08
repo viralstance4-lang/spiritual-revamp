@@ -52,11 +52,18 @@ function cartReducer(state, action) {
         ),
       };
     case 'CLEAR_CART':
-      return { ...state, items: [], coupon: null, discount: 0 };
+      return { ...state, items: [], coupon: null, discount: 0, gift: null, minOrderValue: 0, autoApplied: false };
     case 'SET_COUPON':
-      return { ...state, coupon: action.payload.code, discount: action.payload.discount };
+      return {
+        ...state,
+        coupon:        action.payload.code,
+        discount:      action.payload.discount,
+        gift:          action.payload.gift || null,
+        minOrderValue: action.payload.minOrderValue || 0,
+        autoApplied:   !!action.payload.autoApplied,
+      };
     case 'REMOVE_COUPON':
-      return { ...state, coupon: null, discount: 0 };
+      return { ...state, coupon: null, discount: 0, gift: null, minOrderValue: 0, autoApplied: false };
     case 'LOAD':
       return { ...state, items: action.payload };
     default:
@@ -66,7 +73,13 @@ function cartReducer(state, action) {
 
 // ─── Provider ─────────────────────────────────────────────────────────────────
 export function CartProvider({ children }) {
-  const [state, dispatch] = useReducer(cartReducer, { items: [], coupon: null, discount: 0 });
+  const [state, dispatch] = useReducer(cartReducer, {
+    items: [], coupon: null, discount: 0, gift: null, minOrderValue: 0, autoApplied: false,
+  });
+
+  // Nearest "Auto Apply" free-gift coupon the cart hasn't reached yet (for the
+  // "Spend ₹X more to unlock a FREE [gift]" cart hint)
+  const [upcomingGift, setUpcomingGift] = useState(null);
 
   // Live shipping settings from DB
   const [shippingSettings, setShippingSettings] = useState(null);
@@ -93,6 +106,64 @@ export function CartProvider({ children }) {
   // ── Derived values ───────────────────────────────────────────────────────────
   const subtotal     = state.items.reduce((sum, i) => sum + i.price * i.quantity, 0);
   const discount     = state.discount || 0;
+
+  // ── "Auto Apply" coupons: detect, attach, swap or release as the cart changes ──
+  // Debounced so rapid qty changes don't spam the API. Never overrides a coupon
+  // the customer typed in manually — that one is only checked for its min-value rule.
+  useEffect(() => {
+    if (state.items.length === 0) { setUpcomingGift(null); return; }
+
+    const t = setTimeout(async () => {
+      // Manually-applied coupon: just enforce its minimum order value, don't replace it
+      if (state.coupon && !state.autoApplied) {
+        if (state.minOrderValue > 0 && subtotal < state.minOrderValue) {
+          const hadGift = !!state.gift;
+          dispatch({ type: 'REMOVE_COUPON' });
+          toast.error(hadGift
+            ? 'Free gift removed because minimum order value is no longer met.'
+            : `Coupon ${state.coupon} removed — minimum order value is no longer met.`);
+        }
+        return;
+      }
+
+      // No coupon, or an auto-applied one: ask the server for the best qualifying "Auto Apply" coupon
+      try {
+        const res = await api.post('/coupons/auto-apply', { subtotal });
+        const { coupon, upcoming } = res.data;
+        setUpcomingGift(upcoming || null);
+
+        if (coupon) {
+          if (coupon.code !== state.coupon) {
+            dispatch({
+              type: 'SET_COUPON',
+              payload: {
+                code: coupon.code,
+                discount: coupon.discount,
+                gift: coupon.giftProduct || null,
+                minOrderValue: coupon.minOrderValue || 0,
+                autoApplied: true,
+              },
+            });
+            if (coupon.giftProduct) {
+              toast.success(`🎁 Congratulations! You qualified for a FREE ${coupon.giftProduct.name}.\nCoupon ${coupon.code} applied automatically.`);
+            } else {
+              toast.success(`Coupon ${coupon.code} applied automatically${coupon.description ? ` — ${coupon.description}` : ''}`);
+            }
+          }
+        } else if (state.coupon && state.autoApplied) {
+          const hadGift = !!state.gift;
+          dispatch({ type: 'REMOVE_COUPON' });
+          toast.error(hadGift
+            ? 'Free gift removed because minimum order value is no longer met.'
+            : `Coupon ${state.coupon} removed — minimum order value is no longer met.`);
+        }
+      } catch {
+        // Auto-apply is a background convenience — fail silently
+      }
+    }, 500);
+
+    return () => clearTimeout(t);
+  }, [subtotal, state.items.length, state.coupon, state.autoApplied, state.gift, state.minOrderValue]);
 
   // Default shipping uses prepaid rate (shown in cart sidebar)
   const shippingCharge = calcShipping(subtotal, 'razorpay', shippingSettings);
@@ -122,8 +193,21 @@ export function CartProvider({ children }) {
   const applyCoupon = useCallback(async (code) => {
     try {
       const res = await api.post('/coupons/validate', { code, subtotal });
-      dispatch({ type: 'SET_COUPON', payload: { code: res.data.coupon.code, discount: res.data.coupon.discount } });
-      toast.success(res.data.coupon.description || 'Coupon applied!');
+      const { coupon } = res.data;
+      dispatch({
+        type: 'SET_COUPON',
+        payload: {
+          code: coupon.code,
+          discount: coupon.discount,
+          gift: coupon.giftProduct || null,
+          minOrderValue: coupon.minOrderValue || 0,
+        },
+      });
+      if (coupon.giftProduct) {
+        toast.success(`🎁 Free Gift Added: ${coupon.giftProduct.name}`);
+      } else {
+        toast.success(coupon.description || 'Coupon applied!');
+      }
       return { success: true };
     } catch (err) {
       toast.error(err.response?.data?.message || 'Invalid coupon');
@@ -139,6 +223,9 @@ export function CartProvider({ children }) {
     <CartContext.Provider value={{
       items:               state.items,
       coupon:              state.coupon,
+      gift:                state.gift,
+      autoApplied:         state.autoApplied,
+      upcomingGift,
       subtotal,
       shippingCharge,
       discount,

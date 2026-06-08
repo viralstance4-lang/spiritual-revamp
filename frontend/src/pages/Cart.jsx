@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trash2, Plus, Minus, Tag, ArrowRight, ShoppingBag } from 'lucide-react';
+import { Trash2, Plus, Minus, Tag, ArrowRight, ShoppingBag, Gift } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import ProductCard from '../components/product/ProductCard';
 import { productApi } from '../services/api';
 
 export default function Cart() {
   const {
-    items, subtotal, shippingCharge, discount, total,
+    items, subtotal, shippingCharge, discount, total, gift, autoApplied, upcomingGift,
     amountToFreeShipping, coupon, shippingSettings, removeFromCart, updateQuantity, applyCoupon, removeCoupon,
   } = useCart();
   const freeThreshold = shippingSettings?.prepaidFreeThreshold ?? 499;
@@ -67,6 +67,48 @@ export default function Cart() {
                 transition={{ duration: 0.8 }}
                 className="h-full bg-gold-gradient rounded-full"
               />
+            </div>
+          </motion.div>
+        )}
+
+        {/* Free gift progress (Auto Apply coupons) */}
+        {!gift && upcomingGift && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="glass-gold rounded-xl p-4 mb-6 border border-gold-400/20"
+          >
+            <div className="flex items-center justify-between text-sm mb-2">
+              <span className="text-gold-400 flex items-center gap-1.5">
+                <Gift className="w-4 h-4" />
+                Spend ₹{upcomingGift.amountAway.toLocaleString('en-IN')} more to unlock a FREE {upcomingGift.giftProductName}!
+              </span>
+              <span className="text-white/50">
+                ₹{subtotal.toLocaleString('en-IN')} / ₹{upcomingGift.minOrderValue.toLocaleString('en-IN')}
+              </span>
+            </div>
+            <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${Math.min(100, (subtotal / upcomingGift.minOrderValue) * 100)}%` }}
+                transition={{ duration: 0.8 }}
+                className="h-full bg-gold-gradient rounded-full"
+              />
+            </div>
+          </motion.div>
+        )}
+
+        {/* Free gift unlocked banner (Auto Apply) */}
+        {gift && autoApplied && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="glass-gold rounded-xl p-4 mb-6 border border-gold-400/30 flex items-center gap-3"
+          >
+            <Gift className="w-6 h-6 text-gold-400 flex-shrink-0" />
+            <div>
+              <p className="text-gold-400 font-semibold text-sm">🎁 Free Gift Added: {gift.name}</p>
+              <p className="text-xs text-white/40 mt-0.5">Coupon {coupon} applied automatically</p>
             </div>
           </motion.div>
         )}
@@ -138,6 +180,41 @@ export default function Cart() {
               ))}
             </AnimatePresence>
 
+            {/* Free gift item */}
+            {gift && (
+              <motion.div
+                layout
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="glass rounded-2xl p-4 md:p-6 flex gap-4 border border-gold-400/30"
+              >
+                <div className="flex-shrink-0">
+                  <div className="w-20 h-20 md:w-24 md:h-24 rounded-xl overflow-hidden border border-gold-400/30">
+                    <img
+                      src={gift.image}
+                      alt={gift.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <Gift className="w-4 h-4 text-gold-400 flex-shrink-0" />
+                    <h3 className="font-semibold text-white text-sm md:text-base truncate">{gift.name}</h3>
+                  </div>
+                  <span className="inline-block mt-1 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide rounded-full bg-gold-400/15 text-gold-400">
+                    Free Gift
+                  </span>
+                  <p className="text-sm font-bold mt-2">
+                    <span className="text-white/30 line-through mr-2">₹{gift.price?.toLocaleString('en-IN')}</span>
+                    <span className="text-green-400">FREE</span>
+                  </p>
+                  <p className="text-xs text-white/40 mt-2">Qty: 1 · Added with coupon {coupon}</p>
+                </div>
+              </motion.div>
+            )}
+
             {/* Upsell section */}
             {upsells.length > 0 && (
               <div className="mt-8">
@@ -191,11 +268,15 @@ export default function Cart() {
                   <div className="flex items-center gap-2">
                     <Tag className="w-4 h-4 text-green-400" />
                     <span className="text-sm font-semibold text-green-400">{coupon}</span>
-                    <span className="text-xs text-white/40">applied</span>
+                    <span className="text-xs text-white/40">{autoApplied ? 'applied automatically' : 'applied'}</span>
                   </div>
-                  <button onClick={removeCoupon} className="text-xs text-white/30 hover:text-red-400 transition-colors">
-                    Remove
-                  </button>
+                  {autoApplied ? (
+                    <span className="text-[10px] uppercase tracking-wide text-gold-400/70 font-semibold">Auto</span>
+                  ) : (
+                    <button onClick={removeCoupon} className="text-xs text-white/30 hover:text-red-400 transition-colors">
+                      Remove
+                    </button>
+                  )}
                 </div>
               ) : (
                 <>
@@ -218,7 +299,7 @@ export default function Cart() {
                     </button>
                   </div>
                   <p className="text-xs text-white/30 mb-4 text-center">
-                    Try: WELCOME10 or SOULSTONE20
+                    Try: FLAT250 or FLAT100
                   </p>
                 </>
               )}

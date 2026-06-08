@@ -18,6 +18,13 @@ export default function ProductCard({ product, index = 0 }) {
     : 0;
 
   const isLowStock = product.stock > 0 && product.stock <= 10;
+  const isOutOfStock = product.stock === 0;
+
+  const handleAddToCart = (e) => {
+    e.preventDefault();
+    if (isOutOfStock) return;
+    addToCart(product);
+  };
 
   return (
     <motion.div
@@ -51,7 +58,11 @@ export default function ProductCard({ product, index = 0 }) {
               -{discount}%
             </span>
           )}
-          {isLowStock && (
+          {isOutOfStock ? (
+            <span className="badge bg-white/10 text-white/50 border border-white/20 text-[10px]">
+              ✗ Out of Stock
+            </span>
+          ) : isLowStock && (
             <span className="badge bg-orange-500/20 text-orange-400 border border-orange-500/30 text-[10px]">
               ⚡ Only {product.stock} left
             </span>
@@ -62,14 +73,12 @@ export default function ProductCard({ product, index = 0 }) {
         <motion.button
           initial={{ opacity: 0, y: 10 }}
           whileHover={{ opacity: 1, y: 0 }}
-          className="absolute bottom-3 left-3 right-3 flex items-center justify-center gap-2 bg-gold-500 text-dark-400 font-semibold text-sm py-2.5 rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-gold-400"
-          onClick={(e) => {
-            e.preventDefault();
-            addToCart(product);
-          }}
+          disabled={isOutOfStock}
+          className="absolute bottom-3 left-3 right-3 flex items-center justify-center gap-2 bg-gold-500 text-dark-400 font-semibold text-sm py-2.5 rounded-xl opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-gold-400 disabled:opacity-0 group-hover:disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none"
+          onClick={handleAddToCart}
         >
           <ShoppingCart className="w-4 h-4" />
-          Add to Cart
+          {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
         </motion.button>
       </Link>
 
@@ -111,9 +120,10 @@ export default function ProductCard({ product, index = 0 }) {
             )}
           </div>
           <button
-            onClick={() => addToCart(product)}
-            className="w-9 h-9 rounded-full bg-gold-500/10 border border-gold-500/30 flex items-center justify-center text-gold-400 hover:bg-gold-500 hover:text-dark-400 transition-all"
-            aria-label="Add to cart"
+            onClick={handleAddToCart}
+            disabled={isOutOfStock}
+            className="w-9 h-9 rounded-full bg-gold-500/10 border border-gold-500/30 flex items-center justify-center text-gold-400 hover:bg-gold-500 hover:text-dark-400 transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-gold-500/10 disabled:hover:text-gold-400"
+            aria-label={isOutOfStock ? 'Out of stock' : 'Add to cart'}
           >
             <ShoppingCart className="w-4 h-4" />
           </button>

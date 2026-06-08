@@ -76,9 +76,14 @@ exports.verifyPayment = async (req, res) => {
   await order.save();
 
   try {
+    // Atomic claim — prevents a duplicate email if the webhook also fires for this payment
+    const claimed = await Order.findOneAndUpdate(
+      { _id: order._id, confirmationEmailSent: false },
+      { confirmationEmailSent: true }
+    );
     const emailTo = order.guestInfo?.email ||
       (order.user ? (await User.findById(order.user).select('email'))?.email : null);
-    if (emailTo) await sendOrderConfirmationEmail(order, emailTo);
+    if (claimed && emailTo) await sendOrderConfirmationEmail(order, emailTo);
   } catch (emailErr) {
     console.error('[Email] Failed to send confirmation:', emailErr.message);
   }
@@ -112,9 +117,14 @@ exports.webhook = async (req, res) => {
     );
     if (order) {
       try {
+        // Atomic claim — prevents a duplicate email if the frontend's verify call also fired
+        const claimed = await Order.findOneAndUpdate(
+          { _id: order._id, confirmationEmailSent: false },
+          { confirmationEmailSent: true }
+        );
         const emailTo = order.guestInfo?.email ||
           (order.user ? (await User.findById(order.user).select('email'))?.email : null);
-        if (emailTo) await sendOrderConfirmationEmail(order, emailTo);
+        if (claimed && emailTo) await sendOrderConfirmationEmail(order, emailTo);
       } catch (emailErr) {
         console.error('[Email] Webhook email failed:', emailErr.message);
       }

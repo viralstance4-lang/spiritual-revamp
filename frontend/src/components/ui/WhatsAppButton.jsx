@@ -13,7 +13,7 @@ export default function WhatsAppButton({ phone = '917599214642', message = 'Hi! 
       transition={{ delay: 2, type: 'spring', stiffness: 200 }}
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.95 }}
-      className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full flex items-center justify-center shadow-2xl"
+      className="fixed bottom-[59px] right-6 z-50 w-14 h-14 rounded-full flex items-center justify-center shadow-2xl"
       style={{ background: '#25D366' }}
       aria-label="Chat on WhatsApp"
     >

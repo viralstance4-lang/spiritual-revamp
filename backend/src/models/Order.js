@@ -70,6 +70,7 @@ const orderSchema = new mongoose.Schema({
       note: String,
     },
   ],
+  confirmationEmailSent: { type: Boolean, default: false },
   isGift: { type: Boolean, default: false },
   giftMessage: String,
   deliveredAt: Date,

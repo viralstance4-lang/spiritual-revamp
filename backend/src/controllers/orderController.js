@@ -41,6 +41,9 @@ exports.createOrder = async (req, res) => {
     if (!product) {
       return res.status(404).json({ success: false, message: `Product ${item.product} not found` });
     }
+    if (product.stock === 0) {
+      return res.status(400).json({ success: false, message: 'Product is out of stock' });
+    }
     if (product.stock < item.quantity) {
       return res.status(400).json({
         success: false,
@@ -92,11 +95,16 @@ exports.createOrder = async (req, res) => {
 
   const order = await Order.create(orderData);
 
-  // Send confirmation email only for COD (online payment sends after Razorpay verify)
+  // Send confirmation email only for COD (online payment sends after Razorpay verify/webhook)
   if (paymentMethod === 'cod') {
     try {
+      // Atomic claim — guarantees the email is sent at most once even under retries
+      const claimed = await Order.findOneAndUpdate(
+        { _id: order._id, confirmationEmailSent: false },
+        { confirmationEmailSent: true }
+      );
       const emailTo = req.user?.email || guestInfo?.email;
-      if (emailTo) await sendOrderConfirmationEmail(order, emailTo);
+      if (claimed && emailTo) await sendOrderConfirmationEmail(order, emailTo);
     } catch (emailErr) {
       console.error('[Email] Failed to send confirmation:', emailErr.message);
     }

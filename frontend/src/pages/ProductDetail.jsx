@@ -230,7 +230,11 @@ export default function ProductDetail() {
             <div className="flex items-center gap-3 mb-6">
               <StarRating rating={product.ratings?.average || 0} count={product.ratings?.count || 0} size="sm" />
               <span className="text-sm text-white/40">|</span>
-              <span className="text-sm text-green-400 font-medium">✓ In Stock ({product.stock} left)</span>
+              {product.stock > 0 ? (
+                <span className="text-sm text-green-400 font-medium">✓ In Stock ({product.stock} left)</span>
+              ) : (
+                <span className="text-sm text-red-400 font-medium">✗ Out of Stock</span>
+              )}
             </div>
 
             <div className="flex items-baseline gap-3 mb-2">
@@ -253,24 +257,35 @@ export default function ProductDetail() {
 
             <div className="flex flex-col sm:flex-row gap-3 mb-6">
               <div className="flex items-center border border-white/10 rounded-xl overflow-hidden">
-                <button onClick={() => setQty(q => Math.max(1, q - 1))}
-                  className="w-12 h-12 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-colors">
+                <button onClick={() => setQty(q => Math.max(1, q - 1))} disabled={product.stock === 0}
+                  className="w-12 h-12 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent">
                   −
                 </button>
                 <span className="w-12 text-center font-medium">{qty}</span>
-                <button onClick={() => setQty(q => Math.min(10, q + 1))}
-                  className="w-12 h-12 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-colors">
+                <button onClick={() => setQty(q => Math.min(10, product.stock, q + 1))} disabled={product.stock === 0}
+                  className="w-12 h-12 flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent">
                   +
                 </button>
               </div>
-              <button onClick={() => addToCart(product, qty)} className="btn-outline flex-1 justify-center">
+              <button
+                onClick={() => addToCart(product, qty)}
+                disabled={product.stock === 0}
+                className="btn-outline flex-1 justify-center disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+              >
                 <ShoppingCart className="w-4 h-4" />
-                Add to Cart
+                {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
               </button>
-              <Link to="/checkout" onClick={() => addToCart(product, qty)} className="btn-primary flex-1 justify-center">
-                <Zap className="w-4 h-4" />
-                Buy Now
-              </Link>
+              {product.stock === 0 ? (
+                <button disabled className="btn-primary flex-1 justify-center disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none">
+                  <Zap className="w-4 h-4" />
+                  Out of Stock
+                </button>
+              ) : (
+                <Link to="/checkout" onClick={() => addToCart(product, qty)} className="btn-primary flex-1 justify-center">
+                  <Zap className="w-4 h-4" />
+                  Buy Now
+                </Link>
+              )}
             </div>
 
             {product.affirmation && (

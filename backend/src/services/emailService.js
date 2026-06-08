@@ -1,23 +1,9 @@
-const nodemailer = require('nodemailer');
 const { SiteSettings } = require('../models/ShippingSettings');
-
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'smtp-relay.brevo.com',
-  port: Number(process.env.SMTP_PORT) || 587,
-  secure: false,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-  tls: { rejectUnauthorized: process.env.NODE_ENV === 'production' },
-  connectionTimeout: 15000,
-  greetingTimeout: 15000,
-  socketTimeout: 20000,
-});
+const { sendBrevoEmail } = require('./brevoMailer');
 
 const sendOrderConfirmationEmail = async (order, email) => {
-  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-    console.log('[Email] Skipped — SMTP credentials not set');
+  if (!process.env.BREVO_API_KEY) {
+    console.log('[Email] Skipped — BREVO_API_KEY not set');
     return;
   }
 
@@ -116,13 +102,14 @@ const sendOrderConfirmationEmail = async (order, email) => {
 
   const subject = `✨ Order Confirmed — #${order.orderId} | ${brandName}`;
 
-  await transporter.sendMail({
-    from: `"${brandName}" <${process.env.SMTP_USER}>`,
+  await sendBrevoEmail({
     to: email,
     subject,
     html,
+    fromName: brandName,
+    fromEmail: process.env.FROM_EMAIL || process.env.SMTP_USER,
   });
-  console.log(`[Email] Confirmation sent to ${email} via Brevo SMTP`);
+  console.log(`[Email] Confirmation sent to ${email} via Brevo API`);
 };
 
 module.exports = { sendOrderConfirmationEmail };

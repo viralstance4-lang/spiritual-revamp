@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const nodemailer = require('nodemailer');
+const { sendBrevoEmail } = require('../services/brevoMailer');
 
 // POST /api/contact — public, no auth required
 router.post('/', async (req, res) => {
@@ -13,27 +13,19 @@ router.post('/', async (req, res) => {
     return res.status(400).json({ success: false, message: 'Please provide a valid email address.' });
   }
 
-  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-    console.warn('[Contact] SMTP not configured — contact form submission skipped');
+  if (!process.env.BREVO_API_KEY) {
+    console.warn('[Contact] BREVO_API_KEY not configured — contact form submission skipped');
     return res.json({ success: true, message: 'Message received. We will get back to you shortly.' });
   }
 
-  const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp-relay.brevo.com',
-    port: Number(process.env.SMTP_PORT) || 587,
-    secure: false,
-    auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
-    tls: { rejectUnauthorized: process.env.NODE_ENV === 'production' },
-    connectionTimeout: 15000,
-    greetingTimeout: 15000,
-  });
-
   const businessEmail = process.env.CONTACT_EMAIL || process.env.SMTP_USER;
+  const fromEmail = process.env.FROM_EMAIL || process.env.SMTP_USER;
 
-  await transporter.sendMail({
-    from: `"Spiritual Revamp Contact" <${process.env.SMTP_USER}>`,
+  await sendBrevoEmail({
     to: businessEmail,
     replyTo: email,
+    fromName: 'Spiritual Revamp Contact',
+    fromEmail,
     subject: `[Contact Form] ${subject?.trim() || 'New Message'} — from ${name}`,
     html: `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#fff;padding:32px;border-radius:12px;">
@@ -55,9 +47,10 @@ router.post('/', async (req, res) => {
   });
 
   // Auto-reply to the sender
-  await transporter.sendMail({
-    from: `"Spiritual Revamp" <${process.env.SMTP_USER}>`,
+  await sendBrevoEmail({
     to: email,
+    fromName: 'Spiritual Revamp',
+    fromEmail,
     subject: 'We received your message ✨ — Spiritual Revamp',
     html: `
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#0a0a0a;color:#fff;padding:32px;border-radius:12px;">

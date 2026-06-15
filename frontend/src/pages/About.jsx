@@ -16,12 +16,12 @@ const team = [
     bio: '20+ years of crystal healing practice. Studied at the Bihar School of Yoga.',
     emoji: '🌸',
   },
-  {
-    name: 'Aryan Mehta',
-    role: 'Co-Founder & Head of Design',
-    bio: 'Jewellery designer turned spiritual entrepreneur. Creates every bracelet design by hand.',
-    emoji: '✨',
-  },
+  // {
+  //   name: 'Aryan Mehta',
+  //   role: 'Co-Founder & Head of Design',
+  //   bio: 'Jewellery designer turned spiritual entrepreneur. Creates every bracelet design by hand.',
+  //   emoji: '✨',
+  // },
 ];
 
 export default function About() {

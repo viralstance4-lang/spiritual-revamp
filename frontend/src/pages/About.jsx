@@ -11,7 +11,7 @@ const values = [
 
 const team = [
   {
-    name: 'Sunita Rao',
+    name: 'Gunjan Shyam',
     role: 'Founder & Crystal Healer',
     bio: '20+ years of crystal healing practice. Studied at the Bihar School of Yoga.',
     emoji: '🌸',

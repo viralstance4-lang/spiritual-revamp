@@ -61,7 +61,7 @@ export default function Contact() {
           <div className="md:col-span-2 space-y-5">
             {[
               { icon: Mail, label: 'Email Us', value: 'info@sukhdeyiindia.com', href: 'mailto:info@sukhdeyiindia.com', sub: 'Reply within 24 hours' },
-              { icon: MapPin, label: 'Address', value: 'Sector 144 Noida, UP- 201306', sub: 'Shipping pan-India' },
+              { icon: MapPin, label: 'Address', value: 'Nai Sarak Shastri Nagar Meerut Uttar Pradesh', sub: 'Shipping pan-India' },
             ].map(({ icon: Icon, label, value, href, sub }) => (
               <motion.div
                 key={label}

@@ -160,7 +160,7 @@ export default function Footer() {
               {[
                 { Icon: Mail,   text: 'info@sukhdeyiindia.com', href: 'mailto:info@sukhdeyiindia.com' },
                 // { Icon: Phone,  text: '+91 98765 43210' },
-                { Icon: MapPin, text: 'Sector 144 Noida, UP- 201306' },
+                { Icon: MapPin, text: 'Nai Sarak Shastri Nagar Meerut Uttar Pradesh' },
               ].map(({ Icon, text, href }) => (
                 <li key={text} className="flex items-start gap-3">
                   <Icon className="w-4 h-4 text-gold-500 flex-shrink-0 mt-0.5" />

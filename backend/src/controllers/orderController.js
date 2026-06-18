@@ -5,7 +5,8 @@ const User = require('../models/User');
 const ShippingSettings = require('../models/ShippingSettings');
 const { calculateShipping } = require('./shippingController');
 const { applyCouponToOrder } = require('./couponController');
-const { sendOrderConfirmationEmail } = require('../services/emailService');
+const { sendOrderConfirmationEmail, sendAdminOrderNotificationEmail } = require('../services/emailService');
+const { syncOrderToShiprocket } = require('../services/shiprocketSync');
 
 // Create Order (both logged in & guest)
 exports.createOrder = async (req, res) => {
@@ -109,19 +110,53 @@ exports.createOrder = async (req, res) => {
 
   const order = await Order.create(orderData);
 
+  console.log(`[Order] ✓ Created #${order.orderId} | method: ${paymentMethod} | total: ₹${order.total}`);
+
   // Send confirmation email only for COD (online payment sends after Razorpay verify/webhook)
   if (paymentMethod === 'cod') {
+    const emailTo = req.user?.email || guestInfo?.email;
+
+    console.log(`[Order] #${order.orderId} | customer email: ${emailTo || '(none)'}`);
+
+    // ── Customer confirmation email ──────────────────────────────────────────
     try {
-      // Atomic claim — guarantees the email is sent at most once even under retries
       const claimed = await Order.findOneAndUpdate(
         { _id: order._id, confirmationEmailSent: false },
         { confirmationEmailSent: true }
       );
-      const emailTo = req.user?.email || guestInfo?.email;
-      if (claimed && emailTo) await sendOrderConfirmationEmail(order, emailTo);
+      if (claimed && emailTo) {
+        console.log(`[Order] #${order.orderId} | triggering customer confirmation email → ${emailTo}`);
+        await sendOrderConfirmationEmail(order, emailTo);
+        console.log(`[Order] #${order.orderId} | customer confirmation email sent ✓`);
+      } else if (!emailTo) {
+        console.warn(`[Order] #${order.orderId} | no customer email address — confirmation skipped`);
+      }
     } catch (emailErr) {
-      console.error('[Email] Failed to send confirmation:', emailErr.message);
+      console.error(`[Order] #${order.orderId} | customer email error: ${emailErr.message}`);
     }
+
+    // ── Admin notification — async IIFE, fully independent ──────────────────
+    ;(async () => {
+      try {
+        console.log(`[Order] #${order.orderId} | triggering admin notification`);
+        const claimed = await Order.findOneAndUpdate(
+          { _id: order._id, adminNotificationSent: false },
+          { adminNotificationSent: true }
+        );
+        if (claimed) {
+          await sendAdminOrderNotificationEmail(order, emailTo);
+        } else {
+          console.log(`[Order] #${order.orderId} | admin notification already claimed — skipped`);
+        }
+      } catch (err) {
+        console.error(`[Order] #${order.orderId} | admin notification error: ${err.message}`, err.stack);
+      }
+    })();
+
+    // ── Shiprocket sync — fire-and-forget ────────────────────────────────────
+    syncOrderToShiprocket(order, emailTo).catch(err =>
+      console.error(`[Order] #${order.orderId} | Shiprocket COD sync error: ${err.message}`)
+    );
   }
 
   // Decrement stock (free gifts reduce stock but don't count as "sold")
@@ -252,6 +287,86 @@ exports.deleteOrder = async (req, res) => {
 
   await order.deleteOne();
   res.json({ success: true, message: 'Order deleted' });
+};
+
+// ── Admin: manually re-trigger Shiprocket sync ────────────────────────────────
+// Use when a sync failed (shiprocketResponse.error) or was never attempted.
+// Resets the atomic claim flag so syncOrderToShiprocket can claim it again.
+exports.resyncShiprocket = async (req, res) => {
+  const order = await Order.findById(req.params.id);
+  if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
+
+  // Only sync orders where payment is confirmed
+  const syncable =
+    order.paymentMethod === 'cod' ||
+    order.paymentStatus === 'paid';
+  if (!syncable) {
+    return res.status(400).json({
+      success: false,
+      message: 'Only paid / COD-confirmed orders can be pushed to Shiprocket.',
+    });
+  }
+
+  if (order.shiprocketOrderId) {
+    return res.status(409).json({
+      success: false,
+      message: 'Order is already in Shiprocket.',
+      shiprocketOrderId: order.shiprocketOrderId,
+    });
+  }
+
+  // Reset claim so the sync function can proceed
+  await Order.findByIdAndUpdate(order._id, {
+    shiprocketSynced:   false,
+    shiprocketResponse: null,
+  });
+
+  const emailTo =
+    order.guestInfo?.email ||
+    (order.user
+      ? (await User.findById(order.user).select('email'))?.email
+      : null);
+
+  // Fire-and-forget — caller gets an immediate 202
+  syncOrderToShiprocket(order, emailTo).catch(err =>
+    console.error('[Shiprocket] Manual resync error:', err.message)
+  );
+
+  res.status(202).json({ success: true, message: 'Shiprocket sync triggered.' });
+};
+
+// ── Admin: Shiprocket debug info for a single order ───────────────────────────
+// GET /api/orders/admin/:id/shiprocket-debug
+// Returns the exact payload we sent, the full Shiprocket response, and a
+// human-readable sync status — useful when investigating why an order is missing
+// from Shiprocket.
+exports.getShiprocketDebug = async (req, res) => {
+  const order = await Order.findById(req.params.id).select(
+    'orderId paymentMethod paymentStatus ' +
+    'shiprocketSynced shiprocketOrderId shiprocketShipmentId ' +
+    'shiprocketStatus shiprocketSyncedAt shiprocketError ' +
+    'shiprocketResponse shiprocketLastPayload'
+  );
+  if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
+
+  const syncStatus =
+    order.shiprocketOrderId       ? 'synced'  :
+    order.shiprocketSynced        ? 'failed'  :
+    (order.paymentMethod === 'cod' ||
+     order.paymentStatus  === 'paid') ? 'pending' : 'not_eligible';
+
+  res.json({
+    success: true,
+    orderId:               order.orderId,
+    syncStatus,
+    shiprocketOrderId:     order.shiprocketOrderId    || null,
+    shiprocketShipmentId:  order.shiprocketShipmentId || null,
+    shiprocketStatus:      order.shiprocketStatus     || null,
+    shiprocketSyncedAt:    order.shiprocketSyncedAt   || null,
+    shiprocketError:       order.shiprocketError      || null,
+    lastPayloadSent:       order.shiprocketLastPayload || null,
+    lastApiResponse:       order.shiprocketResponse   || null,
+  });
 };
 
 exports.getDashboardStats = async (req, res) => {

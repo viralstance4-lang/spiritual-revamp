@@ -10,6 +10,8 @@ const {
   updateOrderStatus,
   deleteOrder,
   getDashboardStats,
+  resyncShiprocket,
+  getShiprocketDebug,
 } = require('../controllers/orderController');
 
 router.post('/', optionalAuth, createOrder);
@@ -20,6 +22,8 @@ router.get('/admin/all', protect, adminOnly, getAllOrders);
 router.get('/admin/stats', protect, adminOnly, getDashboardStats);
 router.get('/admin/:id', protect, adminOnly, getAdminOrder);
 router.put('/admin/:id/status', protect, adminOnly, updateOrderStatus);
+router.get('/admin/:id/shiprocket-debug', protect, adminOnly, getShiprocketDebug);
+router.post('/admin/:id/sync-shiprocket', protect, adminOnly, resyncShiprocket);
 router.delete('/admin/:id', protect, adminOnly, deleteOrder);
 
 // Public order tracking by orderId string (no auth required)
@@ -27,7 +31,7 @@ router.delete('/admin/:id', protect, adminOnly, deleteOrder);
 router.get('/track/:orderId', async (req, res) => {
   const Order = require('../models/Order');
   const order = await Order.findOne({ orderId: req.params.orderId })
-    .select('orderId orderStatus paymentMethod shippingAddress items subtotal total discount trackingNumber trackingUrl statusHistory createdAt deliveredAt');
+    .select('orderId orderStatus paymentMethod shippingAddress items subtotal total discount trackingNumber trackingUrl awbCode courierName shiprocketStatus statusHistory createdAt deliveredAt');
   if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
   res.json({ success: true, order });
 });

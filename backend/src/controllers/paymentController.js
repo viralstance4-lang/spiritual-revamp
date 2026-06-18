@@ -1,8 +1,9 @@
 const Razorpay = require('razorpay');
-const crypto = require('crypto');
-const Order = require('../models/Order');
-const User = require('../models/User');
-const { sendOrderConfirmationEmail } = require('../services/emailService');
+const crypto   = require('crypto');
+const Order    = require('../models/Order');
+const User     = require('../models/User');
+const { sendOrderConfirmationEmail, sendAdminOrderNotificationEmail } = require('../services/emailService');
+const { syncOrderToShiprocket }      = require('../services/shiprocketSync');
 
 // ✅ Fixed — lazy init, won't crash on startup
 
@@ -75,18 +76,49 @@ exports.verifyPayment = async (req, res) => {
   order.razorpaySignature = razorpay_signature;
   await order.save();
 
+  const emailTo =
+    order.guestInfo?.email ||
+    (order.user ? (await User.findById(order.user).select('email'))?.email : null);
+
+  console.log(`[Payment] #${order.orderId} | verifyPayment — customer: ${emailTo || '(none)'}`);
+
+  // ── Customer confirmation email ────────────────────────────────────────────
   try {
-    // Atomic claim — prevents a duplicate email if the webhook also fires for this payment
     const claimed = await Order.findOneAndUpdate(
       { _id: order._id, confirmationEmailSent: false },
       { confirmationEmailSent: true }
     );
-    const emailTo = order.guestInfo?.email ||
-      (order.user ? (await User.findById(order.user).select('email'))?.email : null);
-    if (claimed && emailTo) await sendOrderConfirmationEmail(order, emailTo);
+    if (claimed && emailTo) {
+      console.log(`[Payment] #${order.orderId} | triggering customer confirmation → ${emailTo}`);
+      await sendOrderConfirmationEmail(order, emailTo);
+      console.log(`[Payment] #${order.orderId} | customer confirmation sent ✓`);
+    }
   } catch (emailErr) {
-    console.error('[Email] Failed to send confirmation:', emailErr.message);
+    console.error(`[Payment] #${order.orderId} | customer email error: ${emailErr.message}`);
   }
+
+  // ── Admin notification — async IIFE, fully independent ────────────────────
+  ;(async () => {
+    try {
+      console.log(`[Payment] #${order.orderId} | triggering admin notification (verifyPayment)`);
+      const claimed = await Order.findOneAndUpdate(
+        { _id: order._id, adminNotificationSent: false },
+        { adminNotificationSent: true }
+      );
+      if (claimed) {
+        await sendAdminOrderNotificationEmail(order, emailTo);
+      } else {
+        console.log(`[Payment] #${order.orderId} | admin notification already claimed — skipped`);
+      }
+    } catch (err) {
+      console.error(`[Payment] #${order.orderId} | admin notification error (verifyPayment): ${err.message}`, err.stack);
+    }
+  })();
+
+  // ── Shiprocket sync ────────────────────────────────────────────────────────
+  syncOrderToShiprocket(order, emailTo).catch(err =>
+    console.error(`[Payment] #${order.orderId} | Shiprocket sync error (verifyPayment): ${err.message}`)
+  );
 
   res.json({ success: true, order });
 };
@@ -108,26 +140,59 @@ exports.webhook = async (req, res) => {
   const { event, payload } = req.body;
 
   if (event === 'payment.captured') {
-    const paymentId = payload.payment.entity.id;
+    const paymentId       = payload.payment.entity.id;
     const razorpayOrderId = payload.payment.entity.order_id;
+
     const order = await Order.findOneAndUpdate(
       { razorpayOrderId },
       { paymentStatus: 'paid', orderStatus: 'confirmed', razorpayPaymentId: paymentId },
       { new: true }
     );
+
     if (order) {
+      const emailTo =
+        order.guestInfo?.email ||
+        (order.user ? (await User.findById(order.user).select('email'))?.email : null);
+
+      console.log(`[Payment] #${order.orderId} | Razorpay webhook — customer: ${emailTo || '(none)'}`);
+
+      // ── Customer confirmation email ──────────────────────────────────────
       try {
-        // Atomic claim — prevents a duplicate email if the frontend's verify call also fired
         const claimed = await Order.findOneAndUpdate(
           { _id: order._id, confirmationEmailSent: false },
           { confirmationEmailSent: true }
         );
-        const emailTo = order.guestInfo?.email ||
-          (order.user ? (await User.findById(order.user).select('email'))?.email : null);
-        if (claimed && emailTo) await sendOrderConfirmationEmail(order, emailTo);
+        if (claimed && emailTo) {
+          console.log(`[Payment] #${order.orderId} | triggering customer confirmation → ${emailTo}`);
+          await sendOrderConfirmationEmail(order, emailTo);
+          console.log(`[Payment] #${order.orderId} | customer confirmation sent ✓`);
+        }
       } catch (emailErr) {
-        console.error('[Email] Webhook email failed:', emailErr.message);
+        console.error(`[Payment] #${order.orderId} | customer email error (webhook): ${emailErr.message}`);
       }
+
+      // ── Admin notification — async IIFE, fully independent ──────────────
+      ;(async () => {
+        try {
+          console.log(`[Payment] #${order.orderId} | triggering admin notification (webhook)`);
+          const claimed = await Order.findOneAndUpdate(
+            { _id: order._id, adminNotificationSent: false },
+            { adminNotificationSent: true }
+          );
+          if (claimed) {
+            await sendAdminOrderNotificationEmail(order, emailTo);
+          } else {
+            console.log(`[Payment] #${order.orderId} | admin notification already claimed — skipped`);
+          }
+        } catch (err) {
+          console.error(`[Payment] #${order.orderId} | admin notification error (webhook): ${err.message}`, err.stack);
+        }
+      })();
+
+      // ── Shiprocket sync ──────────────────────────────────────────────────
+      syncOrderToShiprocket(order, emailTo).catch(err =>
+        console.error(`[Payment] #${order.orderId} | Shiprocket sync error (webhook): ${err.message}`)
+      );
     }
   }
 

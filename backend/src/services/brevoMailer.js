@@ -6,23 +6,30 @@ const BREVO_API_URL = 'https://api.brevo.com/v3/smtp/email';
 
 const sendBrevoEmail = async ({ to, subject, html, fromName, fromEmail, replyTo }) => {
   if (!process.env.BREVO_API_KEY) {
-    console.log('[Email] Skipped — BREVO_API_KEY not set');
+    console.log('[Brevo] Skipped — BREVO_API_KEY not set');
     return;
   }
 
+  // `to` can be a single email string or an array of email strings
+  const toList = Array.isArray(to)
+    ? to.map(email => ({ email }))
+    : [{ email: to }];
+
   const payload = {
-    sender: { name: fromName, email: fromEmail },
-    to: [{ email: to }],
+    sender:      { name: fromName, email: fromEmail },
+    to:          toList,
     subject,
     htmlContent: html,
   };
   if (replyTo) payload.replyTo = { email: replyTo };
 
+  console.log(`[Brevo] Sending "${subject}" → ${toList.map(t => t.email).join(', ')}`);
+
   const response = await fetch(BREVO_API_URL, {
     method: 'POST',
     headers: {
-      accept: 'application/json',
-      'api-key': process.env.BREVO_API_KEY,
+      accept:         'application/json',
+      'api-key':      process.env.BREVO_API_KEY,
       'content-type': 'application/json',
     },
     body: JSON.stringify(payload),
@@ -30,10 +37,13 @@ const sendBrevoEmail = async ({ to, subject, html, fromName, fromEmail, replyTo 
 
   if (!response.ok) {
     const errBody = await response.text();
+    console.error(`[Brevo] ✗ HTTP ${response.status} for "${subject}" → ${toList.map(t => t.email).join(', ')}: ${errBody}`);
     throw new Error(`Brevo API ${response.status}: ${errBody}`);
   }
 
-  return response.json();
+  const result = await response.json();
+  console.log(`[Brevo] ✓ Accepted — messageId: ${result.messageId}`);
+  return result;
 };
 
 module.exports = { sendBrevoEmail };

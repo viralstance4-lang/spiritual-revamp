@@ -1,5 +1,6 @@
 const Product = require('../models/Product');
-const Review = require('../models/Review');
+const Review  = require('../models/Review');
+const Media   = require('../models/Media');
 
 exports.getAllProducts = async (req, res) => {
   const { category, sort, featured, bestseller, search, page = 1, limit = 12 } = req.query;
@@ -141,6 +142,20 @@ exports.uploadProductImages = async (req, res) => {
       public_id: isCloudinary ? file.filename : null,
     };
   });
+
+  // Index every uploaded image in the global media library (fire-and-forget)
+  const mediaDocs = req.files.map((file, i) => ({
+    url:      images[i].url,
+    publicId: images[i].public_id || `local-product-${Date.now()}-${i}`,
+    type:     'image',
+    filename: file.originalname,
+    format:   file.mimetype.split('/')[1] || '',
+    size:     file.size || 0,
+    source:   'product',
+  }));
+  Media.insertMany(mediaDocs).catch(err =>
+    console.error('[Media] Failed to index product images:', err.message)
+  );
 
   res.json({ success: true, images });
 };

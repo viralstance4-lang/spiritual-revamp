@@ -50,6 +50,32 @@ exports.getAllMedia = async (req, res) => {
   });
 };
 
+// ─── GET /api/media/images ────────────────────────────────────────────────────
+// Global image library — all images across products, media uploads, settings.
+// Query params: search=  page=  limit=  (default limit 24 for modal grid)
+exports.getMediaImages = async (req, res) => {
+  const { search, page = 1, limit = 24 } = req.query;
+  const pageNum  = Math.max(1, Number(page));
+  const limitNum = Math.min(100, Math.max(1, Number(limit)));
+
+  const query = { type: 'image' };
+  if (search) query.filename = { $regex: search, $options: 'i' };
+
+  const skip = (pageNum - 1) * limitNum;
+  const [data, totalItems] = await Promise.all([
+    Media.find(query).sort({ createdAt: -1 }).skip(skip).limit(limitNum),
+    Media.countDocuments(query),
+  ]);
+
+  res.json({
+    success:    true,
+    data,
+    page:       pageNum,
+    totalPages: Math.ceil(totalItems / limitNum),
+    totalItems,
+  });
+};
+
 // ─── DELETE /api/media/:id ─────────────────────────────────────────────────────
 // Removes the file from Cloudinary AND the database
 exports.deleteMedia = async (req, res) => {

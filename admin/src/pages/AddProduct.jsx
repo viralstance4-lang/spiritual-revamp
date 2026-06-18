@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Upload, Plus, X, Save, ArrowLeft, Star, GripVertical, Loader2 } from 'lucide-react';
+import { Upload, Plus, X, Save, ArrowLeft, Star, GripVertical } from 'lucide-react';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import '../styles/quill-dark.css';
 import api from '../services/api';
 import toast from 'react-hot-toast';
+import MediaLibraryModal from '../components/MediaLibraryModal';
 
 const QUILL_MODULES = {
   toolbar: [
@@ -50,8 +51,8 @@ function computeDiscountedPrice(comparePrice, discountType, discountValue) {
   return null;
 }
 
-// ─── Image Manager: upload + cover selection + drag-to-reorder ────────────────
-function ImageManager({ images, setImages, uploading, onUpload }) {
+// ─── Image Manager: cover selection + drag-to-reorder ────────────────────────
+function ImageManager({ images, setImages, onOpenModal }) {
   const dragIndex = useRef(null);
 
   const setCover = (idx) => {
@@ -141,25 +142,16 @@ function ImageManager({ images, setImages, uploading, onUpload }) {
           </div>
         ))}
 
-        {/* Upload button */}
+        {/* Add Images button — opens modal */}
         {images.length < 5 && (
-          <label className={`w-24 h-24 rounded-xl border-2 border-dashed border-white/20 flex flex-col items-center justify-center cursor-pointer hover:border-gold-500/50 hover:bg-white/5 transition-all ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
-            {uploading
-              ? <Loader2 className="w-6 h-6 text-gold-500 animate-spin" />
-              : <>
-                  <Upload className="w-5 h-5 text-white/30 mb-1" />
-                  <span className="text-[10px] text-white/30">Upload</span>
-                </>
-            }
-            <input
-              type="file"
-              accept="image/*"
-              multiple
-              className="hidden"
-              onChange={onUpload}
-              disabled={uploading || images.length >= 5}
-            />
-          </label>
+          <button
+            type="button"
+            onClick={onOpenModal}
+            className="w-24 h-24 rounded-xl border-2 border-dashed border-white/20 flex flex-col items-center justify-center hover:border-gold-500/50 hover:bg-white/5 transition-all"
+          >
+            <Upload className="w-5 h-5 text-white/30 mb-1" />
+            <span className="text-[10px] text-white/30">Upload</span>
+          </button>
         )}
       </div>
       <p className="text-xs text-white/30">Max 5 images · JPG/PNG/WebP · 5 MB each · Drag to reorder · First image is the cover</p>
@@ -173,7 +165,7 @@ export default function AddProduct() {
   const isEdit = !!id;
   const [form, setForm] = useState(emptyProduct);
   const [images, setImages] = useState([]);
-  const [uploading, setUploading] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const [saving, setSaving] = useState(false);
   const [categories, setCategories] = useState([]);
 
@@ -225,24 +217,8 @@ export default function AddProduct() {
     });
   };
 
-  const handleImageUpload = async (e) => {
-    const files = Array.from(e.target.files);
-    if (!files.length) return;
-    setUploading(true);
-    try {
-      const formData = new FormData();
-      files.forEach(f => formData.append('images', f));
-      // Do NOT set Content-Type manually — axios sets it with the correct multipart boundary
-      const res = await api.post('/products/upload/images', formData);
-      setImages(prev => [...prev, ...res.data.images]);
-      toast.success(`${files.length} image(s) uploaded`);
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Image upload failed');
-    } finally {
-      setUploading(false);
-      // Reset the input so the same file can be re-selected after an error
-      e.target.value = '';
-    }
+  const handleMediaSelect = (newImages) => {
+    setImages(prev => [...prev, ...newImages].slice(0, 5));
   };
 
   const handleSubmit = async (e) => {
@@ -424,7 +400,13 @@ export default function AddProduct() {
       </div>
 
       {/* Images */}
-      <ImageManager images={images} setImages={setImages} uploading={uploading} onUpload={handleImageUpload} />
+      <ImageManager images={images} setImages={setImages} onOpenModal={() => setShowModal(true)} />
+      <MediaLibraryModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        onSelect={handleMediaSelect}
+        currentCount={images.length}
+      />
 
       {/* Benefits */}
       <div className="glass rounded-2xl p-6 space-y-3">

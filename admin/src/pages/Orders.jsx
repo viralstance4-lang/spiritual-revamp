@@ -1,15 +1,16 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Download, Search, RefreshCw, X, User, Phone, Mail, MapPin,
   Package, CreditCard, Truck, Clock, ChevronRight, Loader2,
-  CheckCircle, XCircle, AlertCircle, Trash2, Gift,
+  CheckCircle, XCircle, AlertCircle, Trash2, Gift, ExternalLink,
 } from 'lucide-react';
+import { io } from 'socket.io-client';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
-const STATUS_OPTIONS = ['placed', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'];
+const STATUS_OPTIONS = ['placed', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'returned'];
 
 const STATUS_META = {
   placed:     { color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/20',     dot: 'bg-yellow-400',  icon: Clock },
@@ -18,6 +19,7 @@ const STATUS_META = {
   shipped:    { color: 'bg-indigo-500/20 text-indigo-400 border-indigo-500/20',     dot: 'bg-indigo-400',  icon: Truck },
   delivered:  { color: 'bg-green-500/20 text-green-400 border-green-500/20',        dot: 'bg-green-400',   icon: CheckCircle },
   cancelled:  { color: 'bg-red-500/20 text-red-400 border-red-500/20',              dot: 'bg-red-400',     icon: XCircle },
+  returned:   { color: 'bg-orange-500/20 text-orange-400 border-orange-500/20',     dot: 'bg-orange-400',  icon: Truck },
 };
 
 function StatusBadge({ status, size = 'sm' }) {
@@ -28,6 +30,18 @@ function StatusBadge({ status, size = 'sm' }) {
       {status}
     </span>
   );
+}
+
+function SRSyncBadge({ order }) {
+  const eligible = order.paymentMethod === 'cod' || order.paymentStatus === 'paid';
+  if (!eligible) return null;
+  if (order.shiprocketOrderId) {
+    return <span className="text-[10px] text-green-400 font-medium">SR ✓</span>;
+  }
+  if (order.shiprocketSynced) {
+    return <span className="text-[10px] text-red-400 font-medium">SR ✗ Failed</span>;
+  }
+  return <span className="text-[10px] text-yellow-400 font-medium">SR Pending</span>;
 }
 
 function PaymentBadge({ method, paymentStatus }) {
@@ -50,16 +64,18 @@ function PaymentBadge({ method, paymentStatus }) {
 }
 
 // ─── Order Detail Drawer ────────────────────────────────────────────────────────
-function OrderDetailDrawer({ orderId, onClose, onStatusUpdated, onDeleted }) {
+function OrderDetailDrawer({ orderId, onClose, onStatusUpdated, onDeleted, refreshKey }) {
   const [order, setOrder]       = useState(null);
   const [loading, setLoading]   = useState(true);
   const [saving, setSaving]     = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [resyncing, setResyncing] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [newStatus, setNewStatus]   = useState('');
   const [tracking, setTracking]     = useState('');
   const [trackingUrl, setTrackingUrl] = useState('');
   const [note, setNote]             = useState('');
+  const [localRefreshKey, setLocalRefreshKey] = useState(0);
 
   useEffect(() => {
     if (!orderId) return;
@@ -73,7 +89,7 @@ function OrderDetailDrawer({ orderId, onClose, onStatusUpdated, onDeleted }) {
       })
       .catch(() => toast.error('Failed to load order details'))
       .finally(() => setLoading(false));
-  }, [orderId]);
+  }, [orderId, refreshKey, localRefreshKey]);
 
   const handleUpdateStatus = async () => {
     if (newStatus === order.orderStatus && tracking === (order.trackingNumber || '') && !note) return;
@@ -111,9 +127,23 @@ function OrderDetailDrawer({ orderId, onClose, onStatusUpdated, onDeleted }) {
     }
   };
 
+  const handleResync = async () => {
+    setResyncing(true);
+    try {
+      await api.post(`/orders/admin/${order._id}/sync-shiprocket`);
+      toast.success('Shiprocket sync triggered — refreshing in 4s…');
+      setTimeout(() => setLocalRefreshKey(k => k + 1), 4000);
+    } catch (err) {
+      const msg = err.response?.data?.message || 'Sync request failed';
+      toast.error(msg);
+    } finally {
+      setResyncing(false);
+    }
+  };
+
   const addr = order?.shippingAddress;
   const email = order?.guestInfo?.email || order?.user?.email || '—';
-  const isFinalStatus = order?.orderStatus === 'delivered' || order?.orderStatus === 'cancelled';
+  const isFinalStatus = ['delivered', 'cancelled', 'returned'].includes(order?.orderStatus);
 
   return (
     <>
@@ -351,6 +381,99 @@ function OrderDetailDrawer({ orderId, onClose, onStatusUpdated, onDeleted }) {
                 </div>
               </section>
 
+              {/* ── Shiprocket Sync ── */}
+              {(order.paymentMethod === 'cod' || order.paymentStatus === 'paid') && (
+                <section className="glass rounded-2xl p-4 space-y-3">
+                  <h3 className="text-xs font-semibold text-white/40 uppercase tracking-wider flex items-center gap-2">
+                    <Truck className="w-3.5 h-3.5" /> Shiprocket
+                  </h3>
+
+                  {/* Sync status row */}
+                  {order.shiprocketOrderId ? (
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-green-400 flex items-center gap-1.5">
+                        <CheckCircle className="w-3.5 h-3.5" /> Synced
+                      </span>
+                      <span className="font-mono text-[10px] text-white/40">#{order.shiprocketOrderId}</span>
+                    </div>
+                  ) : order.shiprocketSynced ? (
+                    <div className="space-y-2">
+                      <span className="text-xs text-red-400 flex items-center gap-1.5">
+                        <XCircle className="w-3.5 h-3.5" /> Sync Failed
+                      </span>
+                      {(order.shiprocketError || order.shiprocketResponse?.error) && (
+                        <div className="px-3 py-2 bg-red-500/10 border border-red-500/20 rounded-xl">
+                          <p className="text-[10px] text-red-300/80 font-mono break-all leading-relaxed">
+                            {order.shiprocketError || order.shiprocketResponse?.error}
+                          </p>
+                          {order.shiprocketResponse?.failedAt && (
+                            <p className="text-[10px] text-white/25 mt-1">
+                              Failed: {new Date(order.shiprocketResponse.failedAt).toLocaleString('en-IN', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <span className="text-xs text-yellow-400 flex items-center gap-1.5">
+                      <Clock className="w-3.5 h-3.5" /> Pending sync
+                    </span>
+                  )}
+
+                  {/* Shipment details — only once SR assigns them */}
+                  {order.shiprocketStatus && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-white/40 text-xs">SR Status</span>
+                      <span className="text-white/80 text-xs font-medium capitalize">{order.shiprocketStatus}</span>
+                    </div>
+                  )}
+                  {order.awbCode && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-white/40 text-xs">AWB / Tracking</span>
+                      <span className="font-mono text-xs text-white/80">{order.awbCode}</span>
+                    </div>
+                  )}
+                  {order.courierName && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-white/40 text-xs">Courier</span>
+                      <span className="text-xs text-white/80">{order.courierName}</span>
+                    </div>
+                  )}
+                  {order.trackingUrl && (
+                    <a
+                      href={order.trackingUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 text-xs text-gold-400 hover:text-gold-300 transition-colors"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      Track Shipment
+                    </a>
+                  )}
+                  {order.shiprocketSyncedAt && (
+                    <p className="text-[10px] text-white/25">
+                      Pushed: {new Date(order.shiprocketSyncedAt).toLocaleString('en-IN', {
+                        day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit',
+                      })}
+                    </p>
+                  )}
+
+                  {/* Resync button — shown whenever not yet successfully synced */}
+                  {!order.shiprocketOrderId && (
+                    <button
+                      onClick={handleResync}
+                      disabled={resyncing}
+                      className="w-full py-2 rounded-xl border border-indigo-500/30 hover:border-indigo-500/60 text-indigo-400 hover:text-indigo-300 text-xs font-medium transition-all disabled:opacity-60 flex items-center justify-center gap-2 mt-1"
+                    >
+                      {resyncing
+                        ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Syncing…</>
+                        : <><RefreshCw className="w-3.5 h-3.5" /> {order.shiprocketSynced ? 'Retry Shiprocket Sync' : 'Push to Shiprocket'}</>
+                      }
+                    </button>
+                  )}
+                </section>
+              )}
+
               {/* ── Status History ── */}
               {order.statusHistory?.length > 0 && (
                 <section className="glass rounded-2xl p-4 space-y-3">
@@ -438,8 +561,14 @@ function OrderDetailDrawer({ orderId, onClose, onStatusUpdated, onDeleted }) {
                 <div className={`rounded-2xl p-3 text-sm text-center font-medium
                   ${order.orderStatus === 'delivered'
                     ? 'bg-green-500/10 border border-green-500/20 text-green-400'
+                    : order.orderStatus === 'returned'
+                    ? 'bg-orange-500/10 border border-orange-500/20 text-orange-400'
                     : 'bg-red-500/10 border border-red-500/20 text-red-400'}`}>
-                  {order.orderStatus === 'delivered' ? '✓ Order delivered' : '✕ Order cancelled'}
+                  {order.orderStatus === 'delivered'
+                    ? '✓ Order delivered'
+                    : order.orderStatus === 'returned'
+                    ? '↩ Returned to origin'
+                    : '✕ Order cancelled'}
                   {order.orderStatus === 'cancelled' && order.cancelReason && (
                     <p className="text-xs text-white/40 mt-1">{order.cancelReason}</p>
                   )}
@@ -482,6 +611,45 @@ export default function Orders() {
   const [totalPages, setTotalPages]   = useState(1);
   const [total, setTotal]             = useState(0);
   const [selectedId, setSelectedId]   = useState(null);
+  const [drawerRefreshKey, setDrawerRefreshKey] = useState(0);
+
+  // Keep a ref so the socket handler can read the current selectedId
+  // without needing to be recreated every time it changes.
+  const selectedIdRef = useRef(null);
+  useEffect(() => { selectedIdRef.current = selectedId; }, [selectedId]);
+
+  // Real-time status updates pushed from the Shiprocket webhook
+  useEffect(() => {
+    const BACKEND = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:5000';
+    const socket = io(BACKEND, { transports: ['websocket', 'polling'] });
+
+    socket.on('connect', () => socket.emit('join:admin'));
+
+    socket.on('order-status-updated', (data) => {
+      setOrders(prev => prev.map(o =>
+        o._id === data.orderId
+          ? {
+              ...o,
+              orderStatus:      data.status,
+              shiprocketStatus: data.shiprocketStatus,
+              awbCode:          data.awbCode,
+              courierName:      data.courierName,
+              trackingUrl:      data.trackingUrl,
+            }
+          : o
+      ));
+      // If the detail drawer is open for this order, re-fetch its data
+      if (selectedIdRef.current === data.orderId) {
+        setDrawerRefreshKey(k => k + 1);
+      }
+      toast.success(
+        `Order #${data.orderNumber}: ${data.shiprocketStatus}`,
+        { icon: '📦', duration: 4000 }
+      );
+    });
+
+    return () => socket.disconnect();
+  }, []);
 
   const fetchOrders = useCallback(async () => {
     setLoading(true);
@@ -625,6 +793,7 @@ export default function Orders() {
                     <p className="text-[10px] text-white/30 mt-0.5">
                       {new Date(order.createdAt).toLocaleDateString('en-IN')}
                     </p>
+                    <SRSyncBadge order={order} />
                   </td>
                   <td className="px-4 py-3">
                     <p className="text-sm text-white font-medium">{order.shippingAddress?.name}</p>
@@ -688,6 +857,7 @@ export default function Orders() {
             onClose={() => setSelectedId(null)}
             onStatusUpdated={handleStatusUpdated}
             onDeleted={handleOrderDeleted}
+            refreshKey={drawerRefreshKey}
           />
         )}
       </AnimatePresence>

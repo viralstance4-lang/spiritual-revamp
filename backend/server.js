@@ -146,6 +146,7 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/policies',    policyRoutes);
 app.use('/api/newsletter',  newsletterRoutes);
 app.use('/api/contact',     contactRoutes);
+app.use('/api/webhooks',    require('./src/routes/webhooks'));
 app.use('/api',             subscribeRoutes);
 
 // SMTP test endpoint — admin only

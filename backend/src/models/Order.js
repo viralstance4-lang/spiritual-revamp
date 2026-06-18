@@ -74,7 +74,27 @@ const orderSchema = new mongoose.Schema({
       note: String,
     },
   ],
-  confirmationEmailSent: { type: Boolean, default: false },
+  confirmationEmailSent:    { type: Boolean, default: false },
+  adminNotificationSent:    { type: Boolean, default: false },
+
+  // ── Shiprocket ────────────────────────────────────────────────────────────
+  shiprocketOrderId:    String,   // Shiprocket's numeric order ID (stored as string)
+  shiprocketShipmentId: String,   // Shiprocket shipment ID
+  shiprocketStatus:     String,   // e.g. "NEW", "PICKUP SCHEDULED", "SHIPPED", "Delivered"
+  shiprocketStatusCode: Number,   // Shiprocket numeric status code
+  shiprocketSyncedAt:   Date,     // timestamp of successful sync
+  shiprocketResponse:   mongoose.Schema.Types.Mixed, // full SR response or error blob
+  shiprocketError:      String,   // last sync error message — cleared on success, set on failure
+  shiprocketLastPayload: mongoose.Schema.Types.Mixed, // exact payload sent to Shiprocket API
+  // Atomic-claim flag — same pattern as confirmationEmailSent.
+  // Set to true the moment a handler starts the sync attempt;
+  // prevents verifyPayment + webhook from both pushing the same order.
+  shiprocketSynced:     { type: Boolean, default: false },
+  // Two-way sync fields (populated by Shiprocket webhooks)
+  awbCode:              String,   // Air Waybill / tracking number assigned by courier
+  courierName:          String,   // e.g. "Delhivery", "Bluedart"
+  lastWebhookPayload:   mongoose.Schema.Types.Mixed, // last raw Shiprocket webhook body
+
   isGift: { type: Boolean, default: false },
   giftMessage: String,
   deliveredAt: Date,

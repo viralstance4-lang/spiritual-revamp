@@ -4,15 +4,14 @@ const mongoose = require('mongoose');
 const shippingSettingsSchema = new mongoose.Schema(
   {
     // ── Prepaid (online payment) ──────────────────────────────────────────────
-    prepaidFreeThreshold: { type: Number, default: 499 }, // subtotal >= this → free shipping
-    prepaidCharge:        { type: Number, default: 79  }, // charge when subtotal < threshold
+    prepaidFreeThreshold: { type: Number, default: 999 }, // subtotal > this → free shipping
+    prepaidCharge:        { type: Number, default: 185 }, // flat charge when subtotal <= threshold
 
     // ── COD ───────────────────────────────────────────────────────────────────
-    // COD never has "free" shipping — just a higher vs lower surcharge
     codEnabled:     { type: Boolean, default: true }, // global ON/OFF — admin toggles from Settings
-    codThreshold:   { type: Number,  default: 499  }, // subtotal threshold for COD tiers
-    codChargeBelow: { type: Number,  default: 79   }, // COD charge when subtotal < threshold
-    codChargeAbove: { type: Number,  default: 20   }, // COD charge when subtotal >= threshold
+    codThreshold:   { type: Number,  default: 999  }, // subtotal threshold for COD tiers
+    codChargeBelow: { type: Number,  default: 185  }, // COD charge when subtotal <= threshold
+    codChargeAbove: { type: Number,  default: 0    }, // free shipping when subtotal > threshold
   },
   { timestamps: true }
 );

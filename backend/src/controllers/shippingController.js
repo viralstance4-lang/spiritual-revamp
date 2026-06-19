@@ -3,12 +3,12 @@ const { SiteSettings } = require('../models/ShippingSettings');
 
 // Default values used when no settings doc exists yet
 const DEFAULTS = {
-  prepaidFreeThreshold: 499,
-  prepaidCharge:        79,
+  prepaidFreeThreshold: 999,
+  prepaidCharge:        185,
   codEnabled:           true,
-  codThreshold:         499,
-  codChargeBelow:       79,
-  codChargeAbove:       20,
+  codThreshold:         999,
+  codChargeBelow:       185,
+  codChargeAbove:       0,
 };
 
 // ─── GET /api/settings/shipping — public ──────────────────────────────────────
@@ -67,12 +67,8 @@ exports.getSiteSettings = async (req, res) => {
 exports.updateSiteLogo = async (req, res) => {
   const { logoWidth, logoHeight, logoAlt } = req.body;
 
-  // If a file was uploaded via multer, use its URL; otherwise keep existing
   let logoUrl;
   if (req.file) {
-    // Cloudinary storage: file.path = secure_url (absolute https URL)
-    // Disk storage:       store as root-relative path so it works through
-    //                     any proxy (Vite dev, Vercel, nginx, etc.)
     logoUrl = req.file.path?.startsWith('http')
       ? req.file.path
       : `/uploads/logos/${req.file.filename}`;
@@ -99,8 +95,8 @@ exports.calculateShipping = async (subtotal, paymentMethod) => {
   if (!s) s = DEFAULTS;
 
   if (paymentMethod === 'cod') {
-    return subtotal >= s.codThreshold ? s.codChargeAbove : s.codChargeBelow;
+    return subtotal > s.codThreshold ? s.codChargeAbove : s.codChargeBelow;
   }
   // Prepaid / Razorpay / any online method
-  return subtotal >= s.prepaidFreeThreshold ? 0 : s.prepaidCharge;
+  return subtotal > s.prepaidFreeThreshold ? 0 : s.prepaidCharge;
 };

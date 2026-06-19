@@ -8,18 +8,18 @@ const CartContext = createContext();
 export function calcShipping(subtotal, paymentMethod, settings) {
   if (!settings) {
     // hard fallback if API hasn't responded yet
-    if (paymentMethod === 'cod') return subtotal >= 499 ? 20 : 79;
-    return subtotal >= 499 ? 0 : 79;
+    if (paymentMethod === 'cod') return subtotal > 999 ? 0 : 185;
+    return subtotal > 999 ? 0 : 185;
   }
   if (paymentMethod === 'cod') {
-    return subtotal >= (settings.codThreshold ?? 499)
-      ? (settings.codChargeAbove ?? 20)
-      : (settings.codChargeBelow ?? 79);
+    return subtotal > (settings.codThreshold ?? 999)
+      ? (settings.codChargeAbove ?? 0)
+      : (settings.codChargeBelow ?? 185);
   }
   // prepaid / razorpay / online
-  return subtotal >= (settings.prepaidFreeThreshold ?? 499)
+  return subtotal > (settings.prepaidFreeThreshold ?? 999)
     ? 0
-    : (settings.prepaidCharge ?? 79);
+    : (settings.prepaidCharge ?? 185);
 }
 
 // ─── Reducer ──────────────────────────────────────────────────────────────────

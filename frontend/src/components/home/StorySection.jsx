@@ -24,7 +24,7 @@ export default function StorySection() {
               viewport={{ once: true }}
               className="text-xs uppercase tracking-widest text-gold-500 mb-3 font-medium"
             >
-              The spiritual-revamp Difference
+              The Spiritual Revamp Difference
             </motion.p>
             <motion.h2
               initial={{ opacity: 0, y: 20 }}
@@ -54,7 +54,7 @@ export default function StorySection() {
               transition={{ delay: 0.15 }}
               className="text-white/60 leading-relaxed mb-10"
             >
-              spiritual-revamp takes this ancient knowledge and combines it with modern intention-setting
+              Spiritual Revamp takes this ancient knowledge and combines it with modern intention-setting
               practices. The result? Bracelets that don't just look beautiful, they work.
             </motion.p>
             <motion.div

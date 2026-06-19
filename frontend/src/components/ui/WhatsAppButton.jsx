@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 
-export default function WhatsAppButton({ phone = '917599214642', message = 'Hi! I have a question about spiritual-revamp bracelets.' }) {
+export default function WhatsAppButton({ phone = '917599214642', message = 'Hi! I have a question about Spiritual Revamp bracelets.' }) {
   const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
 
   return (

@@ -241,7 +241,7 @@ export default function Login() {
         toast.success('Welcome back! ✨');
       } else {
         await register(form.name, form.email, form.phone, form.password);
-        toast.success('Account created! Welcome to spiritual-revamp ✨');
+        toast.success('Account created! Welcome to Spiritual Revamp ✨');
       }
       navigate('/');
     } catch (err) {
@@ -260,7 +260,7 @@ export default function Login() {
             <div className="w-10 h-10 rounded-full bg-gold-gradient flex items-center justify-center text-dark-400 font-bold">SR</div>
           </Link>
           <h1 className="font-serif text-2xl font-semibold text-white mb-1">
-            {authMode === 'otp' ? 'OTP Login' : mode === 'login' ? 'Welcome Back' : 'Join spiritual-revamp'}
+            {authMode === 'otp' ? 'OTP Login' : mode === 'login' ? 'Welcome Back' : 'Join Spiritual Revamp'}
           </h1>
           <p className="text-white/50 text-sm">
             {authMode === 'otp' ? 'Sign in with your mobile number' : mode === 'login' ? 'Sign in to your spiritual journey' : 'Begin your transformation today'}

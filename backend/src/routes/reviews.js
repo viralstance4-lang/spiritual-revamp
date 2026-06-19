@@ -32,13 +32,8 @@ router.get('/admin/all', protect, adminOnly, async (req, res) => {
   res.json({ success: true, reviews });
 });
 
-// Admin: approve a review (non-prefixed path for frontend compatibility)
-router.put('/:id/approve', protect, adminOnly, async (req, res) => {
-  const Review = require('../models/Review');
-  const review = await Review.findByIdAndUpdate(req.params.id, { isApproved: true }, { new: true });
-  if (!review) return res.status(404).json({ success: false, message: 'Review not found' });
-  res.json({ success: true, review });
-});
+// Admin: approve a review (non-prefixed path — delegates to same controller as /admin/:id/approve)
+router.put('/:id/approve', protect, adminOnly, approveReview);
 
 // Admin: delete a review (non-prefixed path for frontend compatibility)
 router.delete('/:id', protect, adminOnly, deleteReview);

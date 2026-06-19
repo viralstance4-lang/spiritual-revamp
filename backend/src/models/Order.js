@@ -102,6 +102,14 @@ const orderSchema = new mongoose.Schema({
   cancelReason: String,
 }, { timestamps: true });
 
+// ── Indexes ───────────────────────────────────────────────────────────────────
+orderSchema.index({ user: 1, createdAt: -1 });            // getMyOrders
+orderSchema.index({ 'guestInfo.email': 1 });              // guest order lookup
+orderSchema.index({ orderStatus: 1, createdAt: -1 });     // admin filtering + sorting
+orderSchema.index({ paymentStatus: 1 });                  // dashboard aggregations
+orderSchema.index({ createdAt: -1 });                     // default sort
+orderSchema.index({ shiprocketSynced: 1, paymentStatus: 1 }); // sync eligibility queries
+
 // Auto-generate orderId
 orderSchema.pre('save', async function (next) {
   if (!this.orderId) {

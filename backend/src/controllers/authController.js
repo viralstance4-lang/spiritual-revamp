@@ -25,12 +25,16 @@ const sendToken = (user, statusCode, res) => {
 exports.register = async (req, res) => {
   const { name, email, phone, password } = req.body;
 
-  const existing = await User.findOne({ email });
+  if (!name?.trim()) return res.status(400).json({ success: false, message: 'Name is required' });
+  if (!email?.trim()) return res.status(400).json({ success: false, message: 'Email is required' });
+  if (!password || password.length < 6) return res.status(400).json({ success: false, message: 'Password must be at least 6 characters' });
+
+  const existing = await User.findOne({ email: email.toLowerCase().trim() });
   if (existing) {
     return res.status(400).json({ success: false, message: 'Email already registered' });
   }
 
-  const user = await User.create({ name, email, phone, password });
+  const user = await User.create({ name: name.trim(), email: email.toLowerCase().trim(), phone, password });
   await claimGuestOrders(user._id, user.email);
   sendToken(user, 201, res);
 };
@@ -145,39 +149,38 @@ async function sendOtpSms(phone, otp) {
   return { channel: 'none' };
 }
 
-// Send OTP via email using existing SMTP config
+// Send OTP via email using Brevo HTTP API (consistent with rest of email system)
 async function sendOtpEmail(email, otp, phone) {
-  const nodemailer = require('nodemailer');
-  const smtpPass = process.env.SMTP_PASS?.replace(/\s+/g, '');
-  if (!process.env.SMTP_USER || !smtpPass) return false;
-
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: { user: process.env.SMTP_USER, pass: smtpPass },
-    tls: { rejectUnauthorized: false },
-  });
-
-  await transporter.sendMail({
-    from: `"${process.env.FROM_NAME || 'Spiritual Revamp'}" <${process.env.SMTP_USER}>`,
-    to: email,
-    subject: `Your OTP is ${otp} — Spiritual Revamp`,
-    html: `
-      <div style="background:#0a0a0a;padding:40px 20px;font-family:Arial,sans-serif;max-width:480px;margin:0 auto;">
-        <h2 style="color:#D4AF37;margin:0 0 8px;font-size:22px;">Your OTP Code</h2>
-        <p style="color:rgba(255,255,255,0.6);font-size:14px;margin:0 0 24px;">
-          Use this code to sign in to Spiritual Revamp with mobile <strong style="color:#fff;">+91 ${phone}</strong>
-        </p>
-        <div style="background:#1a1a1a;border:1px solid rgba(212,175,55,0.3);border-radius:12px;padding:20px;text-align:center;margin-bottom:24px;">
-          <span style="font-size:38px;font-weight:bold;letter-spacing:10px;color:#D4AF37;">${otp}</span>
+  if (!process.env.BREVO_API_KEY) return false;
+  try {
+    const { sendBrevoEmail } = require('../services/brevoMailer');
+    const brandName = process.env.FROM_NAME || 'Spiritual Revamp';
+    await sendBrevoEmail({
+      to: email,
+      subject: `Your OTP is ${otp} — ${brandName}`,
+      fromName: brandName,
+      fromEmail: process.env.FROM_EMAIL || process.env.SMTP_USER,
+      html: `
+        <div style="background:#0a0a0a;padding:40px 20px;font-family:Arial,sans-serif;max-width:480px;margin:0 auto;">
+          <h2 style="color:#D4AF37;margin:0 0 8px;font-size:22px;">Your OTP Code</h2>
+          <p style="color:rgba(255,255,255,0.6);font-size:14px;margin:0 0 24px;">
+            Use this code to sign in to ${brandName} with mobile <strong style="color:#fff;">+91 ${phone}</strong>
+          </p>
+          <div style="background:#1a1a1a;border:1px solid rgba(212,175,55,0.3);border-radius:12px;padding:20px;text-align:center;margin-bottom:24px;">
+            <span style="font-size:38px;font-weight:bold;letter-spacing:10px;color:#D4AF37;">${otp}</span>
+          </div>
+          <p style="color:rgba(255,255,255,0.3);font-size:12px;margin:0;">
+            Valid for <strong>10 minutes</strong>. Do not share this code with anyone.
+          </p>
         </div>
-        <p style="color:rgba(255,255,255,0.3);font-size:12px;margin:0;">
-          Valid for <strong>10 minutes</strong>. Do not share this code with anyone.
-        </p>
-      </div>
-    `,
-  });
-  console.log(`[OTP] Email sent to ${email}`);
-  return true;
+      `,
+    });
+    console.log(`[OTP] Email sent to ${email} via Brevo`);
+    return true;
+  } catch (err) {
+    console.error(`[OTP] Email failed for ${email}: ${err.message}`);
+    return false;
+  }
 }
 
 // POST /api/auth/otp/send

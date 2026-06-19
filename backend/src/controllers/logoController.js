@@ -2,7 +2,7 @@ const path = require('path');
 const fs = require('fs');
 const Logo = require('../models/Logo');
 
-const BASE_URL = process.env.BASE_URL || 'http://localhost:5000';
+const BASE_URL = process.env.BACKEND_URL || process.env.BASE_URL || 'http://localhost:5000';
 
 // GET /api/logos
 exports.getAllLogos = async (req, res) => {

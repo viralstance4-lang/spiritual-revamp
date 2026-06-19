@@ -27,6 +27,11 @@ const reviewSchema = new mongoose.Schema({
   city: String, // social proof: "Priya from Mumbai"
 }, { timestamps: true });
 
+// ── Indexes ───────────────────────────────────────────────────────────────────
+reviewSchema.index({ product: 1, isApproved: 1 });        // getProductReviews
+reviewSchema.index({ isApproved: 1, createdAt: -1 });     // admin pending list
+reviewSchema.index({ user: 1 });                          // verified purchase check
+
 // ── Shared helper: recalculate ratings for a product from approved reviews ───
 reviewSchema.statics.recalculateForProduct = async function (productId) {
   const Product = mongoose.model('Product');

@@ -1,25 +1,52 @@
 'use strict';
 
-/**
- * shiprocketService.js
- *
- * Low-level Shiprocket API wrapper:
- *   - Email + password → JWT authentication (tokens valid 10 days)
- *   - In-process token cache with 9-day TTL (refreshes 1 h before expiry)
- *   - Automatic one-shot token refresh on 401
- *   - Throws descriptive errors; callers decide whether to retry
- */
-
 const SHIPROCKET_API = 'https://apiv2.shiprocket.in/v1/external';
 
-// ── In-process token cache (resets if the process restarts, which is fine) ───
+// ── In-process token cache ─────────────────────────────────────────────────────
 const _token = {
   value:     null,
-  expiresAt: 0, // epoch ms
+  expiresAt: 0,
 };
 
+// ── Circuit breaker — stops login attempts after a credential failure ──────────
+// Shiprocket locks accounts after ~5 failed logins in a short window.
+// When we detect a 401/403 from /auth/login itself we open the breaker for
+// BREAKER_COOLDOWN_MS (30 min) so no further login attempts are made.
+const BREAKER_COOLDOWN_MS = 30 * 60 * 1000; // 30 minutes
+const _breaker = {
+  open:      false,
+  openedAt:  0,
+  reason:    '',
+};
+
+function isBreakerOpen() {
+  if (!_breaker.open) return false;
+  // Auto-reset after cooldown
+  if (Date.now() - _breaker.openedAt > BREAKER_COOLDOWN_MS) {
+    _breaker.open   = false;
+    _breaker.reason = '';
+    console.log('[Shiprocket] Circuit breaker reset — will retry auth now.');
+    return false;
+  }
+  return true;
+}
+
+function openBreaker(reason) {
+  _breaker.open     = true;
+  _breaker.openedAt = Date.now();
+  _breaker.reason   = reason;
+  // Also wipe the cached token so the next attempt after cooldown fetches fresh
+  _token.value     = null;
+  _token.expiresAt = 0;
+  console.error(
+    `[Shiprocket] ⚡ Circuit breaker OPEN — all Shiprocket calls blocked for 30 min.\n` +
+    `[Shiprocket]   Reason: ${reason}\n` +
+    `[Shiprocket]   Fix: verify SHIPROCKET_EMAIL / SHIPROCKET_PASSWORD in .env, then pm2 restart spiritual-api`
+  );
+}
+
 // ── Logging helpers ────────────────────────────────────────────────────────────
-const tag = '[Shiprocket]';
+const tag  = '[Shiprocket]';
 const log  = (...a) => console.log(tag,  ...a);
 const warn = (...a) => console.warn(tag, ...a);
 
@@ -30,9 +57,9 @@ async function fetchNewToken() {
   const password = process.env.SHIPROCKET_PASSWORD;
 
   if (!email || !password) {
-    throw new Error(
-      'SHIPROCKET_EMAIL and SHIPROCKET_PASSWORD must be set in .env before Shiprocket can be used.'
-    );
+    const err = new Error('SHIPROCKET_EMAIL and SHIPROCKET_PASSWORD must be set in .env');
+    err.nonRetryable = true;
+    throw err;
   }
 
   log('Requesting new auth token…');
@@ -46,32 +73,42 @@ async function fetchNewToken() {
   const data = await res.json().catch(() => ({}));
 
   if (!res.ok || !data.token) {
-    throw new Error(
-      `Shiprocket auth failed (HTTP ${res.status}): ${data.message || JSON.stringify(data)}`
-    );
+    const msg = `Shiprocket auth failed (HTTP ${res.status}): ${data.message || JSON.stringify(data)}`;
+    // 401 / 403 from the login endpoint = wrong credentials or account locked.
+    // Open the circuit breaker — retrying will only make the lockout worse.
+    if (res.status === 401 || res.status === 403) {
+      openBreaker(msg);
+    }
+    const err = new Error(msg);
+    err.status       = res.status;
+    err.nonRetryable = true; // signal withRetry not to loop
+    throw err;
   }
 
   log('Auth token obtained successfully.');
   return data.token;
 }
 
-/**
- * Returns a valid bearer token, re-fetching if missing or close to expiry.
- */
 async function getToken() {
+  if (isBreakerOpen()) {
+    const minutesLeft = Math.ceil((BREAKER_COOLDOWN_MS - (Date.now() - _breaker.openedAt)) / 60000);
+    const err = new Error(
+      `[Shiprocket] Circuit breaker is open (credentials failed). ` +
+      `Auto-resets in ~${minutesLeft} min. Fix: check SHIPROCKET_EMAIL/PASSWORD in .env`
+    );
+    err.nonRetryable = true;
+    throw err;
+  }
+
   const now = Date.now();
-  // Refresh if absent or expiring within the next hour
   if (_token.value && _token.expiresAt > now + 60 * 60 * 1000) {
     return _token.value;
   }
   _token.value     = await fetchNewToken();
-  // Cache for 9 days — Shiprocket tokens are valid for 10; the 1-day margin
-  // ensures we never send an expired token in production.
-  _token.expiresAt = now + 9 * 24 * 60 * 60 * 1000;
+  _token.expiresAt = now + 9 * 24 * 60 * 60 * 1000; // 9-day cache
   return _token.value;
 }
 
-/** Force-expire the cached token (called when we receive a 401). */
 function invalidateToken() {
   _token.value     = null;
   _token.expiresAt = 0;
@@ -79,19 +116,8 @@ function invalidateToken() {
 
 // ── HTTP wrapper ───────────────────────────────────────────────────────────────
 
-/**
- * Make an authenticated request to the Shiprocket API.
- * Automatically retries once after refreshing the token on a 401 response.
- *
- * @param {'GET'|'POST'|'PUT'|'DELETE'} method
- * @param {string}  path    e.g. '/orders/create/adhoc'
- * @param {object}  [body]  JSON body for POST/PUT
- * @param {boolean} [_retry=false]  Internal flag — prevents infinite refresh loop
- * @returns {object} Parsed JSON response body
- * @throws  {Error}  On non-2xx status or network failure
- */
 async function apiRequest(method, path, body, _retry = false) {
-  const token = await getToken();
+  const token = await getToken(); // may throw if breaker is open
 
   const res = await fetch(`${SHIPROCKET_API}${path}`, {
     method,
@@ -102,9 +128,9 @@ async function apiRequest(method, path, body, _retry = false) {
     body: body ? JSON.stringify(body) : undefined,
   });
 
-  // One automatic token refresh on 401
+  // One automatic token refresh on 401 from the API (not from auth/login)
   if (res.status === 401 && !_retry) {
-    warn('Received 401 — invalidating cache and retrying with a fresh token…');
+    warn('Received 401 on API call — invalidating cache and retrying once…');
     invalidateToken();
     return apiRequest(method, path, body, true);
   }
@@ -125,28 +151,24 @@ async function apiRequest(method, path, body, _retry = false) {
 
 // ── Public API surface ─────────────────────────────────────────────────────────
 
-/**
- * Create a new forward order in Shiprocket.
- * @see https://apiv2.shiprocket.in/v1/external/orders/create/adhoc
- */
 async function createOrder(payload) {
   return apiRequest('POST', '/orders/create/adhoc', payload);
 }
 
-/**
- * Cancel Shiprocket orders by their Shiprocket order IDs.
- * @param {number[]} ids  Shiprocket order IDs (integers).
- */
 async function cancelOrder(ids) {
   return apiRequest('POST', '/orders/cancel', { ids });
 }
 
-/**
- * Fetch live tracking details for a shipment.
- * @param {string|number} shipmentId  Shiprocket shipment ID.
- */
 async function trackShipment(shipmentId) {
   return apiRequest('GET', `/courier/track/shipment/${shipmentId}`);
 }
 
-module.exports = { createOrder, cancelOrder, trackShipment, invalidateToken };
+/** Manually reset the circuit breaker (e.g. after fixing credentials). */
+function resetBreaker() {
+  _breaker.open   = false;
+  _token.value    = null;
+  _token.expiresAt = 0;
+  log('Circuit breaker manually reset.');
+}
+
+module.exports = { createOrder, cancelOrder, trackShipment, invalidateToken, resetBreaker };

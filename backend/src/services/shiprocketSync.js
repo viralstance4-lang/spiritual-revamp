@@ -38,6 +38,9 @@ async function withRetry(fn, { attempts = 3, baseDelayMs = 2000, maxDelayMs = 15
       return await fn();
     } catch (err) {
       lastErr = err;
+      // nonRetryable = auth failure / circuit breaker open — stop immediately,
+      // further retries only increase the Shiprocket login attempt count.
+      if (err.nonRetryable) throw err;
       if (i === attempts) break;
       const delay = Math.min(baseDelayMs * Math.pow(2, i - 1), maxDelayMs);
       console.warn(

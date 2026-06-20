@@ -297,7 +297,7 @@ export default function ProductDetail() {
 
             <div className="grid grid-cols-3 gap-3 mb-8">
               {[
-                { icon: Truck,       text: 'Free Ship ₹499+' },
+                { icon: Truck,       text: 'Free Ship ₹999+' },
                 { icon: Headphones,  text: '24/7 Support' },
                 { icon: Shield,      text: 'Secure Payment' },
               ].map(({ icon: Icon, text }) => (

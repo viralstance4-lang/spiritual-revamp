@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { Truck, RotateCcw, Shield, CreditCard, Award, Headphones } from 'lucide-react';
 
 const badges = [
-  { icon: Truck, title: 'Free Shipping', desc: 'On orders above ₹499', color: 'text-green-400' },
+  { icon: Truck, title: 'Free Shipping', desc: 'On orders above ₹999', color: 'text-green-400' },
   // { icon: RotateCcw, title: '7-Day Returns', desc: 'No questions asked', color: 'text-blue-400' },
   { icon: Shield, title: 'Authentic Crystals', desc: '100% certified genuine', color: 'text-gold-400' },
   // { icon: CreditCard, title: 'COD Available', desc: 'Pay on delivery', color: 'text-purple-400' },
@@ -12,7 +12,7 @@ const badges = [
 
 // Marquee ticker items
 const ticker = [
-  '✨ Free Shipping on ₹499+',
+  '✨ Free Shipping on ₹999+',
   '🔮 100% Authentic Crystals',
   '⭐ 4.8/5 Rating, 3,971 Reviews',
   '🚚 Fast Delivery Across India',

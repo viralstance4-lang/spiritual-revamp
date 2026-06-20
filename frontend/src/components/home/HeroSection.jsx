@@ -11,7 +11,7 @@ const floatingOrbs = [
 const stats = [
   { value: '50,000+', label: 'Happy Customers', icon: Star },
   { value: '100%', label: 'Authentic Crystals', icon: Shield },
-  { value: 'Free', label: 'Shipping ₹499+', icon: Truck },
+  { value: 'Free', label: 'Shipping ₹999+', icon: Truck },
 ];
 
 export default function HeroSection() {
